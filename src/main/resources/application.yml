@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: "BackEnd"
+  profiles:
+    active: dev
+    include: secret
