@@ -4,3 +4,8 @@ spring:
   profiles:
     active: dev
     include: secret
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
