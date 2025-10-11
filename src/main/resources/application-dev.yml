@@ -3,15 +3,22 @@ spring:
     activate:
       on-profile: dev
     import: "optional:application-secret.yml"
+
   jpa:
     hibernate:
-      ddl-auto: create # update나 create
+      ddl-auto: create   # update나 create 선택 가능
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         default_batch_fetch_size: 200
         dialect: org.hibernate.dialect.PostgreSQLDialect
+      jakarta:
+        persistence:
+          schema-generation:
+            scripts:
+              action: create
+              create-target: build/schema.sql
 
   datasource:
     url: ${secret.datasource.url}
@@ -22,11 +29,10 @@ spring:
     redis:
       host: localhost
       port: 6379
-      #password: ${secret.redis.password:}
+      # password: ${secret.redis.password:}
 
   rabbitmq:
     host: localhost
     port: 5672
     username: guest
     password: guest
-
