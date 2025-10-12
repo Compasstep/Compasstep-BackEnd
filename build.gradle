@@ -1,7 +1,7 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.6'
-	id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.3.5'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.fifo'
@@ -9,62 +9,74 @@ version = '0.0.1-SNAPSHOT'
 description = 'Demo project for Spring Boot'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	//implementation 'org.springframework.boot:spring-boot-starter-security'(임시 주석 처리)
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	// postgresql
-	runtimeOnly 'org.postgresql:postgresql'
+    // postgresql
+    runtimeOnly 'org.postgresql:postgresql'
 
-	// redis
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-	// JWT (임시 주석 처리)
-	//implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	//runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	//runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    // JWT(주석처리)
+    // implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    // runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    // runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-	// AWS SDK
-	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.261'
+    // AWS SDK
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.261'
 
-	// rabbitmq (임시 주석 처리)
-	//implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    // rabbitmq
+    // implementation 'org.springframework.boot:spring-boot-starter-amqp'
 
-	// QueryDSL
-	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
-	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
-	// 구글 로그인
-	implementation 'com.google.api-client:google-api-client:2.2.0'
+    // 구글 로그인
+    implementation 'com.google.api-client:google-api-client:2.2.0'
 
-	// 메일 발송
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
+    // 메일 발송
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // WebClient (reactor-netty 포함)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // Bean Validation (DTO @NotBlank, @Min 등)
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // @ConfigurationProperties 메타데이터(개발 편의; 런타임 필수는 아님)
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    // 스웨거
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
