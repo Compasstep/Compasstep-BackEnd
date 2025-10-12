@@ -12,9 +12,11 @@ public enum ReferenceErrorStatus implements BaseErrorCode {
 
     // 400
     GENRE_PARAM_MISSING(HttpStatus.BAD_REQUEST, 400, "장르를 지정해주세요."),
+    TITLE_PARAM_MISSING(HttpStatus.BAD_REQUEST, 400, "곡 제목을 지정해주세요."),   // ★ 추가
+    ARTIST_PARAM_MISSING(HttpStatus.BAD_REQUEST, 400, "아티스트를 지정해주세요."), // ★ 추가
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, 400, "잘못된 요청입니다."),
 
-    // 404 (선택)
+    // 404
     YOUTUBE_VIDEO_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "해당 곡의 유튜브 영상을 찾을 수 없습니다."),
 
     // 500
