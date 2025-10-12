@@ -41,7 +41,7 @@ public class ReferenceController {
     @GetMapping("/youtube-link")
     public ApiResponse<YoutubeLinkResponseDto> getYoutubeLink(
             @RequestParam @NotBlank(message = "곡 제목을 지정해주세요.") String title,
-            @RequestParam @NotBlank String artist
+            @RequestParam @NotBlank(message = "아티스트 이름을 지정해주세요.") String artist
     ) {
         YoutubeLinkResponseDto res = youtubeLinkService.getYoutubeLink(
                 new YoutubeLinkRequestDto(title, artist)
