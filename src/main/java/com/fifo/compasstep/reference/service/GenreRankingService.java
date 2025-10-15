@@ -3,8 +3,8 @@ package com.fifo.compasstep.reference.service;
 
 import com.fifo.compasstep.apipayload.exceptions.GeneralException;
 import com.fifo.compasstep.reference.client.SpotifyClient;
-import com.fifo.compasstep.reference.dto.RankingItemDto;
-import com.fifo.compasstep.reference.dto.ReferenceRequestDto;
+import com.fifo.compasstep.reference.dto.RankingItemDTO;
+import com.fifo.compasstep.reference.dto.ReferenceRequestDTO;
 import com.fifo.compasstep.reference.exceptions.ReferenceErrorStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ public class GenreRankingService {
     private final SpotifyClient spotifyClient;
 
     /** Spotify 장르 기반 인기 트랙 */
-    public List<RankingItemDto> getGenreRanking(ReferenceRequestDto req) {
+    public List<RankingItemDTO> getGenreRanking(ReferenceRequestDTO req) {
         try {
             String token = spotifyClient.getAccessToken();
 
@@ -36,7 +36,7 @@ public class GenreRankingService {
                     .limit(req.limitOrDefault())
                     .toList();
 
-            List<RankingItemDto> result = new ArrayList<>();
+            List<RankingItemDTO> result = new ArrayList<>();
             int rank = 1;
             for (Map<String, Object> t : sorted) {
                 result.add(toRankingItem(rank++, t));
@@ -58,11 +58,11 @@ public class GenreRankingService {
         return (List<Map<String, Object>>) tracks.getOrDefault("items", List.of());
     }
 
-    private RankingItemDto toRankingItem(int rank, Map<String, Object> t) {
+    private RankingItemDTO toRankingItem(int rank, Map<String, Object> t) {
         String title = Objects.toString(t.get("name"), "");
         String artistName = extractFirstArtistName(t);
         String imageUrl = extractAlbumImageUrl(t); // ★ Spotify album.images 사용
-        return new RankingItemDto(rank, title, artistName, imageUrl);
+        return new RankingItemDTO(rank, title, artistName, imageUrl);
     }
 
     @SuppressWarnings("unchecked")
