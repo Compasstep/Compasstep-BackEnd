@@ -23,9 +23,9 @@ public class DiscoveryController {
     @PostMapping("/discovery/keyword")
     public ApiResponse<List<TrackVideoDto>> discoveryKeyword(
             @Valid @RequestBody DiscoveryKeywordRequestDto req,
-            // ✅ 인증 전: SpEL 제거(Object로 받음)
+            // 인증 전: SpEL 제거(Object로 받음)
             @AuthenticationPrincipal Object principal,
-            // ✅ DEV ONLY: 임시 헤더(실서비스 전 제거)
+            // 임시 헤더
             @RequestHeader(value = "X-DEV-USER-ID", required = false) String devUserId
     ) {
         // DEV ONLY Fallback (인증 붙으면 제거)
@@ -41,10 +41,8 @@ public class DiscoveryController {
         return service.discover(userIdForQuery, req.query());
     }
 
-    /* ====================== DEV ONLY helpers ======================
-       - 문자열 Fallback + 숫자 변환 기본값
-       - TODO: 인증 붙으면 제거하고 @AuthenticationPrincipal Long userId 로 단순화
-    ================================================================= */
+
+    // 인증 개발 후 제거
     private String extractUsername(Object principal) {
         if (principal == null) return null;
         if (principal instanceof org.springframework.security.core.userdetails.UserDetails u) return u.getUsername();
