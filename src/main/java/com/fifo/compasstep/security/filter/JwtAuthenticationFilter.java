@@ -75,13 +75,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     UserDetails userDetails;
 
                     // 4. 사용자 타입에 따라 적절한 Repository를 사용하여 DB에서 최신 정보 조회
-                    if ("ROLE_ROOT".equals(userType) || "STATUS_NORMAL".equals(userType) ||
-                            ("ROLE_ADMIN".equals(userType) || "STATUS_BLOCKED".equals(userType))) {
+                    if ("ROLE_ROOT".equals(userType) || "ROLE_GENERAL".equals(userType) ||
+                            ("ROLE_DELETED".equals(userType))) {
                         Admin admin = adminRepository.findById(userId)
                                 .orElseThrow(() -> new UsernameNotFoundException("Admin not found with id: " + userId));
                         // AdminUserDetails를 사용하여 UserDetails 생성
                         userDetails = new AdminUserDetails(admin);
-                    } else if ("USER".equals(userType)) {
+                    } else if ("STATUS_NORMAL".equals(userType) || "STATUS_SUSPENDED".equals(userType) ||
+                            ("STATUS_BLOCKED".equals(userType) || "STATUS_DELETED".equals(userType))) {
                         User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
                         // CustomUserDetails를 사용하여 UserDetails 생성
@@ -111,7 +112,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             } catch (Exception e) {
                 // 기타 JWT 관련 오류 (기존 코드와 동일)
-                System.out.println("!!! JWT Filter에서 예상치 못한 오류 발생 !!!");
                 e.printStackTrace(); // 실제 오류의 전체 내용을 콘솔에 출력합니다.
                 handleException(response, AdminErrorStatus.ANOTHER_ERROR);
                 return;

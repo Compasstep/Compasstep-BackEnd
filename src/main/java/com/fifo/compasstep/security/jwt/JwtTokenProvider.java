@@ -3,6 +3,7 @@ package com.fifo.compasstep.security.jwt;
 
 import com.fifo.compasstep.security.jwt.JwtProperties;
 import com.fifo.compasstep.security.userDetails.AdminUserDetails;
+import com.fifo.compasstep.security.userDetails.UserUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -40,21 +41,27 @@ public class JwtTokenProvider {
     }
 
     public String createAccessToken(Authentication authentication) {
-        // 1. getPrincipal()은 Object를 반환하므로 AdminUserDetails로 타입 캐스팅합니다.
-        AdminUserDetails adminDetails = (AdminUserDetails) authentication.getPrincipal();
-
-        String authorities = adminDetails.getAuthorities().stream()
+        String authority = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+                .findFirst() // 첫 번째 권한만 사용 (예: ROLE_ROOT 또는 STATUS_NORMAL)
+                .orElseThrow(() -> new IllegalArgumentException("사용자에게 권한이 없습니다."));
 
         Date now = new Date();
         Date accessTokenExpiresIn = new Date(now.getTime() + jwtProperties.getAccessToken().getExpiration());
 
-        String adminId = String.valueOf(adminDetails.getAdmin().getId());
+        Object principal = authentication.getPrincipal();
+        String Id;
+        if(principal instanceof AdminUserDetails) {
+            Id = String.valueOf(((AdminUserDetails) principal).getAdmin().getId());
+        } else if (principal instanceof UserUserDetails) {
+            Id = ((UserUserDetails) principal).getUsername();
+        } else {
+            throw new IllegalArgumentException("제공되지 않는 유저 타입:" + principal.getClass().getName());
+        }
 
         return Jwts.builder()
-                .setSubject(adminId)
-                .claim(USER_TYPE_KEY, authorities)
+                .setSubject(Id)
+                .claim(USER_TYPE_KEY, authority)
                 .setIssuedAt(now)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
@@ -62,14 +69,21 @@ public class JwtTokenProvider {
     }
 
     public String createRefreshToken(Authentication authentication) {
-        AdminUserDetails adminDetails = (AdminUserDetails) authentication.getPrincipal();
-        String adminId = String.valueOf(adminDetails.getAdmin().getId());
+        Object principal = authentication.getPrincipal();
+        String Id;
+        if(principal instanceof AdminUserDetails) {
+            Id = String.valueOf(((AdminUserDetails) principal).getAdmin().getId());
+        } else if (principal instanceof UserUserDetails) {
+            Id = ((UserUserDetails) principal).getUsername();
+        } else {
+            throw new IllegalArgumentException("제공되지 않는 유저 타입:" + principal.getClass().getName());
+        }
 
         Date now = new Date();
         Date refreshTokenExpiresIn = new Date(now.getTime() + jwtProperties.getRefreshToken().getExpiration());
 
         return Jwts.builder()
-                .setSubject(adminId)
+                .setSubject(Id)
                 .setIssuedAt(now)
                 .setExpiration(refreshTokenExpiresIn)
                 .signWith(secretKey)
@@ -104,9 +118,9 @@ public class JwtTokenProvider {
         }
     }
 
-    public String getAdminIdFromToken(String token) {
-        return parseClaims(token).getSubject();
-    }
+//    public String getAdminIdFromToken(String token) {
+//        return parseClaims(token).getSubject();
+//    }
 
     private Claims parseClaims(String token) {
         try {
@@ -119,12 +133,12 @@ public class JwtTokenProvider {
             return e.getClaims();
         }
     }
-    // ✅ 'getUserId' 메서드
+    // 'getUserId' 메서드
     public Long getUserId(String token) {
         return Long.parseLong(parseClaims(token).getSubject());
     }
 
-    // ✅ 'getUserType' 메서드
+    // 'getUserType' 메서드
     public String getUserType(String token) {
         return parseClaims(token).get(USER_TYPE_KEY, String.class);
     }
