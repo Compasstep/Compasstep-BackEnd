@@ -1,0 +1,73 @@
+<configuration scan="true">
+
+    <!-- FastAPI 코드와 동일한 ENV 키 -->
+    <springProperty scope="context" name="LOG_LEVEL" source="LOG_LEVEL" defaultValue="INFO"/>
+    <springProperty scope="context" name="LOG_DIR"   source="LOG_DIR"   defaultValue="logs"/>
+    <springProperty scope="context" name="LOG_FILE"  source="LOG_FILE"  defaultValue="app.log"/>
+
+    <!-- 포맷: [LEVEL] [yyyy-MM-dd HH:mm:ss] [logger] - message -->
+    <property name="PATTERN_CONSOLE" value="[%highlight(%-5level)] [%d{yyyy-MM-dd HH:mm:ss}] [%logger{36}] - %msg%n"/>
+    <property name="PATTERN_FILE"    value="[%.-5level] [%d{yyyy-MM-dd HH:mm:ss}] [%logger{36}] - %msg%n"/>
+
+    <!-- 콘솔(컬러) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${PATTERN_CONSOLE}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 파일(롤링): 10MB 초과 시 app.log.1 ~ app.log.5 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${LOG_FILE}</file>
+        <encoder>
+            <pattern>${PATTERN_FILE}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>10MB</maxFileSize>
+        </triggeringPolicy>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${LOG_FILE}.%i</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>5</maxIndex>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 루트 로거 -->
+    <root level="${LOG_LEVEL}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+    <!-- 소음 억제 & 유의 경고 정리  -->
+
+    <!-- 부팅 잡담 ↓ -->
+    <logger name="org.hibernate.validator" level="WARN"/>
+    <logger name="org.springframework.data.repository.config" level="WARN"/>
+    <logger name="org.springframework.boot.web.embedded.tomcat" level="WARN"/>
+    <logger name="org.apache.catalina" level="WARN"/>
+    <logger name="org.apache.coyote.http11" level="WARN"/>
+    <logger name="org.hibernate.jpa" level="WARN"/>
+    <logger name="org.hibernate.cache" level="WARN"/>
+    <logger name="org.springframework.orm.jpa" level="WARN"/>
+
+    <!-- Dialect 자동감지 경고는 ERROR로 격하(혹은 설정 자체 제거 권장) -->
+    <logger name="org.hibernate.orm.deprecation" level="ERROR"/>
+
+    <!-- open-in-view 경고를 조용히(근본해결: spring.jpa.open-in-view=false + DTO/페치조인) -->
+    <logger name="org.springframework.boot.autoconfigure.orm.jpa" level="ERROR"/>
+
+    <!-- Netty macOS DNS 네이티브 로더 소음 ↓ (근본해결: 네이티브 의존성 or -Dio.netty.resolver.dns.useNative=false) -->
+    <logger name="io.netty.resolver.dns" level="WARN"/>
+
+    <!-- 네가 원래 넣어둔 억제 라인 유지 -->
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="org.hibernate.type" level="WARN"/>
+    <logger name="reactor.netty" level="WARN"/>
+    <logger name="okhttp3" level="WARN"/>
+    <logger name="org.apache.http" level="WARN"/>
+    <logger name="com.zaxxer.hikari" level="INFO"/>
+
+</configuration>
