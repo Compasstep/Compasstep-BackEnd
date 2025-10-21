@@ -50,14 +50,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = cookieUtil.getAccessTokenFromCookie(request);
         // Swagger 관련 경로는 JWT 검증 건너뛰기
         String requestURI = request.getRequestURI();
-        if (requestURI.startsWith("/api/admin/login") ||
-                requestURI.startsWith("/api/admin/signup") || // "/admin/signup/**"을 포함
+        if (requestURI.equals("/swagger-ui.html") ||
+                requestURI.startsWith("/swagger-ui/") || // '/'를 붙여 /swagger-ui.html과 구분
+                requestURI.startsWith("/v3/api-docs") ||
+                requestURI.startsWith("/api-docs") ||
+                requestURI.startsWith("/swagger-resources") || // 스웨거 리소스 추가
+                // --- 기존 관리자/유저 경로 ---
+                requestURI.startsWith("/api/admin/login") ||
+                requestURI.startsWith("/api/admin/signup") ||
                 requestURI.startsWith("/api/admin/verify") ||
                 requestURI.startsWith("/api/admin/refresh") ||
                 requestURI.startsWith("/api/admin/logout") ||
-                requestURI.startsWith("/swagger-ui") ||
-                requestURI.startsWith("/v3/api-docs") ||
-                requestURI.startsWith("/api-docs")) { // swagger-ui.html 도 포함됨
+                requestURI.startsWith("/api/user/auth/login") ||
+                requestURI.startsWith("api/user/auth/logout")) {
+
             filterChain.doFilter(request, response);
             return;
         }
@@ -104,7 +110,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             } catch (ExpiredJwtException e) {
                 // 토큰 만료 시 커스텀 응답 (기존 코드와 동일)
-                handleException(response, AdminErrorStatus.ADMIN_INVALID_TOKEN); // 에러 상태는 필요에 맞게 수정
+                handleException(response, AdminErrorStatus.JWT_ADMIN_INVALID_TOKEN); // 에러 상태는 필요에 맞게 수정
                 return;
             } catch (UsernameNotFoundException e) {
                 //유저 못찾을 경우 커스텀 응답

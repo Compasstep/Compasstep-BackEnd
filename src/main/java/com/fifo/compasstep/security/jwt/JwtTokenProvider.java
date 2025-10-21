@@ -1,7 +1,6 @@
 package com.fifo.compasstep.security.jwt;
 
 
-import com.fifo.compasstep.security.jwt.JwtProperties;
 import com.fifo.compasstep.security.userDetails.AdminUserDetails;
 import com.fifo.compasstep.security.userDetails.UserUserDetails;
 import io.jsonwebtoken.Claims;
@@ -11,20 +10,15 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -32,7 +26,7 @@ public class JwtTokenProvider {
 
     private final JwtProperties jwtProperties;
     private Key secretKey;
-    private static final String USER_TYPE_KEY = "type";
+    private static final String USER_TYPE_KEY = "type"; // "type" 클레임 이름
 
     @PostConstruct
     protected void init() {
@@ -40,74 +34,78 @@ public class JwtTokenProvider {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Access Token 생성: 'type' 클레임에 '주요 권한' 문자열 저장
+     */
     public String createAccessToken(Authentication authentication) {
-        String authority = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .findFirst() // 첫 번째 권한만 사용 (예: ROLE_ROOT 또는 STATUS_NORMAL)
-                .orElseThrow(() -> new IllegalArgumentException("사용자에게 권한이 없습니다."));
-
         Date now = new Date();
         Date accessTokenExpiresIn = new Date(now.getTime() + jwtProperties.getAccessToken().getExpiration());
 
         Object principal = authentication.getPrincipal();
-        String Id;
-        if(principal instanceof AdminUserDetails) {
-            Id = String.valueOf(((AdminUserDetails) principal).getAdmin().getId());
+        String userId;
+        String authorityString; // "ROLE_ROOT", "STATUS_NORMAL" 등 저장
+
+        // --- ▼▼▼ Principal 타입 안전하게 확인 및 정보 추출 ▼▼▼ ---
+        if (principal instanceof AdminUserDetails) {
+            AdminUserDetails adminDetails = (AdminUserDetails) principal;
+            userId = String.valueOf(adminDetails.getAdmin().getId());
+            // AdminUserDetails에서 정의된 첫 번째 권한 가져오기
+            authorityString = adminDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Admin has no authorities"));
+
         } else if (principal instanceof UserUserDetails) {
-            Id = ((UserUserDetails) principal).getUsername();
+            UserUserDetails userDetails = (UserUserDetails) principal;
+            userId = String.valueOf(userDetails.getUser().getId());
+            // UserUserDetails에서 정의된 첫 번째 권한 가져오기
+            authorityString = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("User has no authorities"));
+
         } else {
-            throw new IllegalArgumentException("제공되지 않는 유저 타입:" + principal.getClass().getName());
+            // 다른 타입의 Principal이 올 경우 예외 처리 (예: Spring의 기본 User 객체 등)
+            // 필요하다면 여기서 다른 UserDetails 타입에 대한 처리 추가
+            throw new IllegalArgumentException("지원되지 않는 Principal 타입입니다: " + principal.getClass().getName());
         }
+        // --- ▲▲▲ ---
 
         return Jwts.builder()
-                .setSubject(Id)
-                .claim(USER_TYPE_KEY, authority)
+                .setSubject(userId)                 // Subject에는 ID 저장
+                .claim(USER_TYPE_KEY, authorityString) // "type" 클레임에 권한 문자열 저장
                 .setIssuedAt(now)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    /**
+     * Refresh Token 생성 (ID만 포함)
+     */
     public String createRefreshToken(Authentication authentication) {
         Object principal = authentication.getPrincipal();
-        String Id;
-        if(principal instanceof AdminUserDetails) {
-            Id = String.valueOf(((AdminUserDetails) principal).getAdmin().getId());
+        String userId;
+        if (principal instanceof AdminUserDetails) {
+            userId = String.valueOf(((AdminUserDetails) principal).getAdmin().getId());
         } else if (principal instanceof UserUserDetails) {
-            Id = ((UserUserDetails) principal).getUsername();
+            userId = String.valueOf(((UserUserDetails) principal).getUser().getId());
         } else {
-            throw new IllegalArgumentException("제공되지 않는 유저 타입:" + principal.getClass().getName());
+            throw new IllegalArgumentException("지원되지 않는 Principal 타입입니다.");
         }
 
         Date now = new Date();
         Date refreshTokenExpiresIn = new Date(now.getTime() + jwtProperties.getRefreshToken().getExpiration());
 
         return Jwts.builder()
-                .setSubject(Id)
+                .setSubject(userId)
                 .setIssuedAt(now)
                 .setExpiration(refreshTokenExpiresIn)
                 .signWith(secretKey)
                 .compact();
     }
 
-    public Authentication getAuthentication(String token) {
-        Claims claims = parseClaims(token);
-
-        if (claims.get(USER_TYPE_KEY) == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
-        }
-
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(USER_TYPE_KEY).toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
-        // 2. User 생성자의 세 번째 인자는 Collection 타입이므로 List를 그대로 전달합니다.
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
-
-        // 3. UsernamePasswordAuthenticationToken은 Authentication의 구현체이므로 반환 타입과 호환됩니다.
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
-    }
+    // getAuthentication 메소드는 DB 조회 방식에서는 불필요하므로 삭제
 
     public boolean validateToken(String token) {
         try {
@@ -118,27 +116,20 @@ public class JwtTokenProvider {
         }
     }
 
-//    public String getAdminIdFromToken(String token) {
-//        return parseClaims(token).getSubject();
-//    }
-
     private Claims parseClaims(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token) // 'Jds'가 아닌 'Jws'
-                    .getBody();
+            return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
     }
-    // 'getUserId' 메서드
+
+    // 토큰에서 사용자 ID(PK) 추출
     public Long getUserId(String token) {
         return Long.parseLong(parseClaims(token).getSubject());
     }
 
-    // 'getUserType' 메서드
+    // 토큰에서 사용자 타입 ("ADMIN" 또는 "USER") 추출
     public String getUserType(String token) {
         return parseClaims(token).get(USER_TYPE_KEY, String.class);
     }
