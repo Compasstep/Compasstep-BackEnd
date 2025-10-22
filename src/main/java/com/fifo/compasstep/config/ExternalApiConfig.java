@@ -3,12 +3,10 @@ package com.fifo.compasstep.config;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestClient;
+import org.springframework.context.annotation.*;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
 @Configuration
 @EnableConfigurationProperties(ExternalApiProperties.class)
@@ -18,37 +16,36 @@ public class ExternalApiConfig {
     private final ExternalApiProperties props;
 
     @Bean("spotifyAuthClient")
-    public RestClient spotifyAuthClient() {
+    public WebClient spotifyAuthClient() {
         var cfg = props.getSpotify();
-        return RestClient.builder()
+        return WebClient.builder()
                 .baseUrl(cfg.getAuthUrl())
-                .requestFactory(simpleRequestFactory(cfg.getTimeoutMs()))
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create().responseTimeout(Duration.ofMillis(cfg.getTimeoutMs()))
+                ))
                 .build();
     }
 
     @Bean("spotifyApiClient")
-    public RestClient spotifyApiClient() {
+    public WebClient spotifyApiClient() {
         var cfg = props.getSpotify();
-        return RestClient.builder()
+        return WebClient.builder()
                 .baseUrl(cfg.getApiUrl())
-                .requestFactory(simpleRequestFactory(cfg.getTimeoutMs()))
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create().responseTimeout(Duration.ofMillis(cfg.getTimeoutMs()))
+                ))
                 .build();
     }
 
-    @Bean("youtubeRestClient")
+    @Bean("youtubeWebClient")
     @Lazy
-    public RestClient youtubeRestClient() {
+    public WebClient youtubeWebClient() {
         var cfg = props.getYoutube();
-        return RestClient.builder()
+        return WebClient.builder()
                 .baseUrl(cfg.getBaseUrl())
-                .requestFactory(simpleRequestFactory(cfg.getTimeoutMs()))
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create().responseTimeout(Duration.ofMillis(cfg.getTimeoutMs()))
+                ))
                 .build();
-    }
-
-    private ClientHttpRequestFactory simpleRequestFactory(long timeoutMs) {
-        var f = new SimpleClientHttpRequestFactory();
-        f.setConnectTimeout(Duration.ofMillis(timeoutMs));
-        f.setReadTimeout(Duration.ofMillis(timeoutMs));
-        return f;
     }
 }

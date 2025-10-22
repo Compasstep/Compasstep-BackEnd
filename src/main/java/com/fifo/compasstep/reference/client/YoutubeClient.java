@@ -5,20 +5,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 public class YoutubeClient {
 
-    // ExternalApiConfig에서 @Bean("youtubeRestClient")로 등록한 RestClient를 주입
-    private final RestClient youtubeRestClient;
+    private final WebClient youtubeWebClient;   // @Bean("youtubeWebClient")
     private final ExternalApiProperties props;  // apiKey 등 설정
 
-    public YoutubeClient(@Qualifier("youtubeRestClient") RestClient youtubeRestClient,
+    public YoutubeClient(@Qualifier("youtubeWebClient") WebClient youtubeWebClient,
                          ExternalApiProperties props) {
-        this.youtubeRestClient = youtubeRestClient;
+        this.youtubeWebClient = youtubeWebClient;
         this.props = props;
     }
 
@@ -28,7 +26,7 @@ public class YoutubeClient {
         var cfg = props.getYoutube();
         String q = (artist == null || artist.isBlank()) ? title : (artist + " - " + title);
 
-        ResponseEntity<Map> entity = youtubeRestClient.get()
+        Map<String, Object> res = youtubeWebClient.get()
                 .uri(uri -> uri.path("/search")
                         .queryParam("part", "snippet")
                         .queryParam("type", "video")
@@ -37,12 +35,9 @@ public class YoutubeClient {
                         .queryParam("key", cfg.getApiKey())
                         .build())
                 .retrieve()
-                .toEntity(Map.class);
+                .bodyToMono(Map.class)
+                .block();
 
-        if (!entity.getStatusCode().is2xxSuccessful()) {
-            return null;
-        }
-        Map<String, Object> res = entity.getBody();
         if (res == null) return null;
 
         List<Map<String, Object>> items =
