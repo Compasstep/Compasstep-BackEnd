@@ -39,9 +39,16 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests(auth -> auth
                         //로그인 밑 회원가입 경로 전부 허용
-                        .requestMatchers("/api/admin/login", "/api/admin/logout", "/auth/oauth/**").permitAll()
+                        .requestMatchers("/api/admin/login", "/api/admin/logout", "/auth/oauth/**", "/api/admin/refresh",
+                                "/api/user/auth/login", "/api/user/auth/logout").permitAll()
                         //Swagger API 허용
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui.html",    // 스웨거 UI 페이지
+                                "/swagger-ui/**",      // 스웨거 UI 리소스 (css, js 등)
+                                "/v3/api-docs/**",     // OpenAPI 3.0 스펙 JSON
+                                "/api-docs/**",        // (하위 버전 호환용)
+                                "/swagger-resources/**" // 스웨거 리소스
+                        ).permitAll()
                         //
                         .requestMatchers("/api/admin/**").hasAnyRole("GENERAL", "ROOT")
                         .requestMatchers("/api/user/**").hasAnyAuthority("STATUS_NORMAL", "STATUS_SUSPENDED")

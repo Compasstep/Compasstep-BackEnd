@@ -29,6 +29,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -65,7 +66,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     // WebClient (reactor-netty 포함)
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    //implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     // Bean Validation (DTO @NotBlank, @Min 등)
     implementation 'org.springframework.boot:spring-boot-starter-validation'

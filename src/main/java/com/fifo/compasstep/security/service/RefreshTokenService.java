@@ -88,7 +88,7 @@ public class RefreshTokenService {
 
     // 내부 클래스: Refresh Token 정보를 담는 클래스
     // 필드 수정 및 추가 (email -> userId, userType)
-    private static class RefreshTokenInfo implements Serializable {
+    public static class RefreshTokenInfo implements Serializable {
         private Long userId;
         private String userType;
         private String refreshToken;
