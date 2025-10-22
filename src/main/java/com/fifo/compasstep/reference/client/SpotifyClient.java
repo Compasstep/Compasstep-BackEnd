@@ -8,15 +8,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClient;
 
 @Component
 @RequiredArgsConstructor
 public class SpotifyClient {
 
-    private final WebClient spotifyAuthClient;  // @Bean("spotifyAuthClient")
-    private final WebClient spotifyApiClient;   // @Bean("spotifyApiClient")
+    // ExternalApiConfig에서 등록한 RestClient 빈(@Bean("spotifyAuthClient"), @Bean("spotifyApiClient"))을 주입
+    private final RestClient spotifyAuthClient;
+    private final RestClient spotifyApiClient;
     private final ExternalApiProperties props;
 
     /** Client Credentials Flow로 액세스 토큰 발급 */
@@ -30,20 +30,22 @@ public class SpotifyClient {
         var form = new LinkedMultiValueMap<String, String>();
         form.add("grant_type", "client_credentials");
 
-        Map<String, Object> tokenJson = spotifyAuthClient.post()
+        ResponseEntity<Map> entity = spotifyAuthClient.post()
+                .uri("") // baseUrl로 POST
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .header(HttpHeaders.AUTHORIZATION, "Basic " + basic)
-                .bodyValue(form)
+                .body(form)
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, r ->
-                        r.bodyToMono(String.class).flatMap(b -> Mono.error(new IllegalStateException("Spotify auth error: " + b)))
-                )
-                .bodyToMono(Map.class)
-                .block();
+                .toEntity(Map.class);
 
-        Object access = tokenJson.get("access_token");
-        if (access == null) throw new IllegalStateException("Spotify token not found");
-        return access.toString();
+        if (!entity.getStatusCode().is2xxSuccessful()) {
+            throw new IllegalStateException("Spotify auth error: " + entity.getStatusCode());
+        }
+        Map<String, Object> tokenJson = entity.getBody();
+        if (tokenJson == null || tokenJson.get("access_token") == null) {
+            throw new IllegalStateException("Spotify token not found");
+        }
+        return tokenJson.get("access_token").toString();
     }
 
     /**
@@ -52,20 +54,24 @@ public class SpotifyClient {
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> searchTracksByGenre(String genre, String market, int limit, int offset, String bearer) {
-        return spotifyApiClient.get()
+        int safeLimit = Math.min(Math.max(limit, 1), 50);
+        int safeOffset = Math.max(offset, 0);
+
+        ResponseEntity<Map> entity = spotifyApiClient.get()
                 .uri(uri -> uri.path("/search")
                         .queryParam("q", "genre:\"" + genre + "\"")
                         .queryParam("type", "track")
                         .queryParam("market", market)
-                        .queryParam("limit", Math.min(Math.max(limit, 1), 50))
-                        .queryParam("offset", Math.max(offset, 0))
+                        .queryParam("limit", safeLimit)
+                        .queryParam("offset", safeOffset)
                         .build())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer)
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, r ->
-                        r.bodyToMono(String.class).flatMap(b -> Mono.error(new IllegalStateException("Spotify search error: " + b)))
-                )
-                .bodyToMono(Map.class)
-                .block();
+                .toEntity(Map.class);
+
+        if (!entity.getStatusCode().is2xxSuccessful()) {
+            throw new IllegalStateException("Spotify search error: " + entity.getStatusCode());
+        }
+        return entity.getBody();
     }
 }
