@@ -13,7 +13,7 @@ public enum AdminErrorStatus implements BaseErrorCode {
 
     ACCESS_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, 401, "액세스 토큰이 유효하지 않습니다."),
     CSRF_TOKEN_INVALID(HttpStatus.FORBIDDEN, 401, "CSRF 토큰이 유효하지 않거나 누락되었습니다."),
-    ADMIN_INVALID_TOKEN(HttpStatus.NOT_FOUND, 401, "토큰이 유효하지 않습니다."),
+    JWT_ADMIN_INVALID_TOKEN(HttpStatus.NOT_FOUND, 401, "jwt토큰이 유효하지 않습니다."),
     ANOTHER_ERROR(HttpStatus.NOT_FOUND, 500, "다른 오류."),
     ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, 403, "관리자가 없습니다."),
     ADMIN_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, 401, "아이디 혹은 비밀번호가 틀렸습니다."),
@@ -23,7 +23,10 @@ public enum AdminErrorStatus implements BaseErrorCode {
     REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, 401, "리프레시 토큰이 유효하지 않습니다."),
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, 401, "리프레시 토큰이 만료되었습니다."),
 
-    CANNOT_DELETE_SELF(HttpStatus.FORBIDDEN, 401, "자기 자신을 탈퇴할 수 없습니다.")
+    CANNOT_DELETE_SELF(HttpStatus.FORBIDDEN, 401, "자기 자신을 탈퇴할 수 없습니다."),
+    PASSWORD_NOT_MATCH(HttpStatus.FORBIDDEN, 401, "두 비밀번호가 일치하지 않습니다."),
+    EMAIL_ALREADY_EXISTS(HttpStatus.FORBIDDEN, 403, "이메일이 중복되었습니다."),
+    NOT_SUPPORTED_USERTYPE(HttpStatus.NOT_FOUND, 401, "지원하지 않는 유저타입입니다.")
 
             ;
 
