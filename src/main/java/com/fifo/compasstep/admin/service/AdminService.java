@@ -203,6 +203,10 @@ public class AdminService {
 
         refreshTokenService.removeRefreshTokenByUser(adminToDelete.getId(), "ADMIN");
     }
+    private Map<String, String> makeTemPassword() {
+        Map<String, String> tempPassword = new HashMap<>();
+        String temp = UUID.randomUUID().toString().substring(0, 8);
+        tempPassword.put("temp", temp);
         tempPassword.put("encoded", passwordEncoder.encode(temp));
         return tempPassword;
     }
