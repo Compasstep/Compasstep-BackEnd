@@ -56,4 +56,12 @@ public class Admin extends BaseEntity {
         this.isDeleted = true;
         this.tempPwd = false;
     }
+
+    public void changePassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void setTempPwd(boolean tempPwd) {
+        this.tempPwd = tempPwd;
+    }
 }
