@@ -2,7 +2,7 @@
 package com.fifo.compasstep.reference.service;
 
 import com.fifo.compasstep.apipayload.ApiResponse;
-import com.fifo.compasstep.apipayload.exceptions.GeneralException;
+import com.fifo.compasstep.apipayload.exceptions.handler.ReferenceHandler; // ✅ 변경
 import com.fifo.compasstep.reference.client.KeywordDiscoveryClient;
 import com.fifo.compasstep.reference.dto.response.TrackVideoDto;
 import com.fifo.compasstep.reference.exceptions.DiscoveryErrorStatus;
@@ -24,9 +24,9 @@ public class DiscoveryService {
         try {
             res = client.discoveryByKeyword(userId, query);
         } catch (Exception e) {
-            throw new GeneralException(DiscoveryErrorStatus.FASTAPI_ERROR);
+            throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_ERROR); // ✅ 변경
         }
-        if (res == null) throw new GeneralException(DiscoveryErrorStatus.FASTAPI_ERROR);
+        if (res == null) throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_ERROR); // ✅ 변경
 
         String code = Objects.toString(res.get("code"), "");
         String message = Objects.toString(res.get("message"), "");
@@ -44,11 +44,11 @@ public class DiscoveryService {
                         (message != null && !message.isBlank()) ? message : "추천 결과가 없습니다.",
                         List.of());
             }
-            case "422" -> throw new GeneralException(DiscoveryErrorStatus.FASTAPI_UNPROCESSABLE);
-            case "403" -> throw new GeneralException(DiscoveryErrorStatus.USER_FORBIDDEN);
-            case "404" -> throw new GeneralException(DiscoveryErrorStatus.USER_NOT_FOUND);
-            case "400" -> throw new GeneralException(DiscoveryErrorStatus.INVALID_REQUEST);
-            default -> throw new GeneralException(DiscoveryErrorStatus.FASTAPI_ERROR);
+            case "422" -> throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_UNPROCESSABLE);
+            case "403" -> throw new ReferenceHandler(DiscoveryErrorStatus.USER_FORBIDDEN);
+            case "404" -> throw new ReferenceHandler(DiscoveryErrorStatus.USER_NOT_FOUND);
+            case "400" -> throw new ReferenceHandler(DiscoveryErrorStatus.INVALID_REQUEST);
+            default -> throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_ERROR);
         }
     }
 
