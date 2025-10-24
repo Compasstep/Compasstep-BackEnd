@@ -1,4 +1,4 @@
-package com.fifo.compasstep.chat.dto.request;
+package com.fifo.compasstep.reference.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 

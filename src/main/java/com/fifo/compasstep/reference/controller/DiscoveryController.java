@@ -1,10 +1,10 @@
 // src/main/java/com/fifo/compasstep/chat/controller/DiscoveryController.java
-package com.fifo.compasstep.chat.controller;
+package com.fifo.compasstep.reference.controller;
 
 import com.fifo.compasstep.apipayload.ApiResponse;
-import com.fifo.compasstep.chat.dto.request.DiscoveryKeywordRequestDto;
-import com.fifo.compasstep.chat.dto.response.TrackVideoDto;
-import com.fifo.compasstep.chat.service.DiscoveryService;
+import com.fifo.compasstep.reference.dto.request.DiscoveryKeywordRequestDto;
+import com.fifo.compasstep.reference.dto.response.TrackVideoDto;
+import com.fifo.compasstep.reference.service.DiscoveryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

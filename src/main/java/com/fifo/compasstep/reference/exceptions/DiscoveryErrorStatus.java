@@ -1,5 +1,5 @@
 // src/main/java/com/fifo/compasstep/chat/exceptions/DiscoveryErrorStatus.java
-package com.fifo.compasstep.chat.exceptions;
+package com.fifo.compasstep.reference.exceptions;
 
 import com.fifo.compasstep.apipayload.code.BaseErrorCode;
 import com.fifo.compasstep.apipayload.code.ErrorReasonDTO;

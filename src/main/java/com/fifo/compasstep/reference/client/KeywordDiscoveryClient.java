@@ -1,5 +1,5 @@
 // src/main/java/com/fifo/compasstep/chat/client/KeywordDiscoveryClient.java
-package com.fifo.compasstep.chat.client;
+package com.fifo.compasstep.reference.client;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;

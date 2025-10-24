@@ -1,11 +1,11 @@
 // src/main/java/com/fifo/compasstep/chat/service/DiscoveryService.java
-package com.fifo.compasstep.chat.service;
+package com.fifo.compasstep.reference.service;
 
 import com.fifo.compasstep.apipayload.ApiResponse;
 import com.fifo.compasstep.apipayload.exceptions.GeneralException;
-import com.fifo.compasstep.chat.client.KeywordDiscoveryClient;
-import com.fifo.compasstep.chat.dto.response.TrackVideoDto;
-import com.fifo.compasstep.chat.exceptions.DiscoveryErrorStatus;
+import com.fifo.compasstep.reference.client.KeywordDiscoveryClient;
+import com.fifo.compasstep.reference.dto.response.TrackVideoDto;
+import com.fifo.compasstep.reference.exceptions.DiscoveryErrorStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
