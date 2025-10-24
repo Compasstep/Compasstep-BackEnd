@@ -1,8 +1,10 @@
+// src/main/java/com/fifo/compasstep/reputationAnalysis/service/ReputationAnalysisService.java
 package com.fifo.compasstep.reputationAnalysis.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fifo.compasstep.apipayload.exceptions.GeneralException;
+import com.fifo.compasstep.apipayload.exceptions.handler.ReputationAnalysisHandler;
+import com.fifo.compasstep.reputationAnalysis.domain.ReputationAnalysis;
 import com.fifo.compasstep.reputationAnalysis.domain.ReputationAnalysisRepository;
 import com.fifo.compasstep.reputationAnalysis.dto.response.ReputationDetailResponseDto;
 import com.fifo.compasstep.reputationAnalysis.dto.response.ReputationListItemDto;
@@ -11,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
@@ -24,13 +29,13 @@ public class ReputationAnalysisService {
 
     /** 대중 평판 목록 조회 */
     public List<ReputationListItemDto> getList(Long userId) {
-        var rows = repo.findListByUserId(userId);
+        List<ReputationAnalysis> rows = repo.findByUserIdOrderByCreatedAtDesc(userId);
         return rows.stream()
-                .map(r -> ReputationListItemDto.builder()
-                        .historyId(r.getHistoryId())
-                        .songTitle(r.getSongTitle())
-                        .artistName(r.getArtistName())
-                        .createdAt(r.getCreatedAt())
+                .map(e -> ReputationListItemDto.builder()
+                        .historyId(e.getId())
+                        .songTitle(e.getSongTitle())
+                        .artistName(e.getArtistName())
+                        .createdAt(toInstant(e.getCreatedAt()))
                         .build())
                 .toList();
     }
@@ -39,24 +44,24 @@ public class ReputationAnalysisService {
     public ReputationDetailResponseDto getDetail(Long historyId, Long userId) {
         // 소유자 확인
         if (!repo.existsByIdAndUserId(historyId, userId)) {
-            throw new GeneralException(ReputationErrorStatus.FORBIDDEN_ACCESS);
+            throw new ReputationAnalysisHandler(ReputationErrorStatus.FORBIDDEN_ACCESS);
         }
 
-        var row = repo.findDetailById(historyId)
-                .orElseThrow(() -> new GeneralException(ReputationErrorStatus.HISTORY_NOT_FOUND));
+        ReputationAnalysis entity = repo.findById(historyId)
+                .orElseThrow(() -> new ReputationAnalysisHandler(ReputationErrorStatus.HISTORY_NOT_FOUND));
 
-        Map<String, Integer> sentiment = parseObject(row.getSentimentSummary());
-        Map<String, Integer> emotions  = parseObject(row.getEmotionDetails());
-        List<String> keywords          = parseArray(row.getKeywords());
+        Map<String, Integer> sentiment = parseObject(entity.getSentimentSummary());
+        Map<String, Integer> emotions  = parseObject(entity.getEmotionDetails());
+        List<String> keywords          = parseArray(entity.getKeywords());
 
         return ReputationDetailResponseDto.builder()
-                .historyId(row.getHistoryId())
-                .songTitle(row.getSongTitle())
-                .artistName(row.getArtistName())
+                .historyId(entity.getId())
+                .songTitle(entity.getSongTitle())
+                .artistName(entity.getArtistName())
                 .sentimentSummary(sentiment)
                 .emotionDetails(emotions)
                 .keywords(keywords)
-                .createdAt(row.getCreatedAt())
+                .createdAt(toInstant(entity.getCreatedAt()))
                 .build();
     }
 
@@ -64,10 +69,10 @@ public class ReputationAnalysisService {
     @Transactional
     public void delete(Long historyId, Long userId) {
         if (!repo.existsByIdAndUserId(historyId, userId)) {
-            throw new GeneralException(ReputationErrorStatus.FORBIDDEN_ACCESS);
+            throw new ReputationAnalysisHandler(ReputationErrorStatus.FORBIDDEN_ACCESS);
         }
-        var found = repo.findById(historyId)
-                .orElseThrow(() -> new GeneralException(ReputationErrorStatus.HISTORY_NOT_FOUND));
+        ReputationAnalysis found = repo.findById(historyId)
+                .orElseThrow(() -> new ReputationAnalysisHandler(ReputationErrorStatus.HISTORY_NOT_FOUND));
         repo.delete(found);
     }
 
@@ -76,14 +81,21 @@ public class ReputationAnalysisService {
         try {
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (Exception e) {
-            throw new GeneralException(ReputationErrorStatus.JSON_PARSE_ERROR);
+            throw new ReputationAnalysisHandler(ReputationErrorStatus.JSON_PARSE_ERROR);
         }
     }
+
     private List<String> parseArray(String json) {
         try {
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (Exception e) {
-            throw new GeneralException(ReputationErrorStatus.JSON_PARSE_ERROR);
+            throw new ReputationAnalysisHandler(ReputationErrorStatus.JSON_PARSE_ERROR);
         }
+    }
+
+    // LocalDateTime → Instant 변환 (KST 기준; 필요 시 UTC로 변경)
+    private static Instant toInstant(LocalDateTime ldt) {
+        return ldt.atOffset(ZoneOffset.ofHours(9)).toInstant();
+        // return ldt.atOffset(ZoneOffset.UTC).toInstant();
     }
 }
