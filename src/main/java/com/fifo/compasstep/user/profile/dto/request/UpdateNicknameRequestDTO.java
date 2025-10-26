@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class UpdateNicknameRequest {
+public class UpdateNicknameRequestDTO {
     @NotBlank(message = "닉네임은 비어 있을 수 없습니다.")
     @Size(max = 30, message = "닉네임은 30자 이하여야 합니다.")
     private String nickname;

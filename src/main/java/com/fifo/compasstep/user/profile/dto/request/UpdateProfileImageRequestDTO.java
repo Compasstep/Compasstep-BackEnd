@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class UpdateProfileImageRequest {
+public class UpdateProfileImageRequestDTO {
     @NotBlank(message = "fileKey는 필수입니다.")
     private String fileKey;
 }

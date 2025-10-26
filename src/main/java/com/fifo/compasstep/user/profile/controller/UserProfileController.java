@@ -3,9 +3,9 @@ package com.fifo.compasstep.user.profile.controller;
 
 import com.fifo.compasstep.apipayload.ApiResponse;
 import com.fifo.compasstep.security.userDetails.UserUserDetails;
-import com.fifo.compasstep.user.profile.dto.request.UpdateNicknameRequest;
-import com.fifo.compasstep.user.profile.dto.request.UpdateProfileImageRequest;
-import com.fifo.compasstep.user.profile.dto.response.UserProfileInfoResponseDto;
+import com.fifo.compasstep.user.profile.dto.request.UpdateNicknameRequestDTO;
+import com.fifo.compasstep.user.profile.dto.request.UpdateProfileImageRequestDTO;
+import com.fifo.compasstep.user.profile.dto.response.UserProfileInfoResponseDTO;
 import com.fifo.compasstep.user.profile.service.UserProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class UserProfileController {
     private final UserProfileService service;
 
     @GetMapping("/info")
-    public ApiResponse<UserProfileInfoResponseDto> getInfo(
+    public ApiResponse<UserProfileInfoResponseDTO> getInfo(
             @AuthenticationPrincipal UserUserDetails currentUser
     ) {
         Long userId = currentUser.getUser().getId();
@@ -31,7 +31,7 @@ public class UserProfileController {
     @PatchMapping("/image")
     public ApiResponse<Void> updateImage(
             @AuthenticationPrincipal UserUserDetails currentUser,
-            @RequestBody @Valid UpdateProfileImageRequest req
+            @RequestBody @Valid UpdateProfileImageRequestDTO req
     ) {
         Long userId = currentUser.getUser().getId();
         service.updateProfileImage(userId, req.getFileKey());
@@ -41,7 +41,7 @@ public class UserProfileController {
     @PatchMapping("/nickname")
     public ApiResponse<Void> updateNickname(
             @AuthenticationPrincipal UserUserDetails currentUser,
-            @RequestBody @Valid UpdateNicknameRequest req
+            @RequestBody @Valid UpdateNicknameRequestDTO req
     ) {
         Long userId = currentUser.getUser().getId();
         service.updateNickname(userId, req.getNickname());
