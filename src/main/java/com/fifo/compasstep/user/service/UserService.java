@@ -115,6 +115,7 @@ public class UserService {
         cookieUtil.deleteCsrfTokenCookie(response);
     }
 
+    @Transactional
     public void signout(HttpServletRequest request, HttpServletResponse response) {
         // 현재 로그인된 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -124,8 +125,11 @@ public class UserService {
         }
         // 현재 로그인 된 사용자를 가져온 뒤 익명화
         UserUserDetails currentUserDetails = (UserUserDetails) authentication.getPrincipal();
-        User currentuser = currentUserDetails.getUser();
-        currentuser.anonymize();
+        Long currentUserId = currentUserDetails.getUser().getId();
+        // 2. ID를 사용해 DB에서 User 객체를 '다시 조회'하여 managed 상태로 만듦
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new UserHandler(UserErrorStatus.USER_NOT_FOUND));
+        currentUser.anonymize();
 
         logout(request, response);
     }
