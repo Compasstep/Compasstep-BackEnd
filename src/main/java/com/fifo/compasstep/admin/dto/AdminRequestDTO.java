@@ -30,6 +30,8 @@ public class AdminRequestDTO {
 
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ReissueRequestDTO {
         private String adminPKId;
     }

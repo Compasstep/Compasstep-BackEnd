@@ -1,5 +1,6 @@
 package com.fifo.compasstep.admin.service;
 
+import com.fifo.compasstep.apipayload.exceptions.handler.UserHandler;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -18,143 +19,85 @@ public class EmailService {
     @Value("${app.invitation.base-url}")
     private String invitationBaseUrl;
 
-    public void sendInvitationEmail(String email, String temppassword) {
-        String subject = "Flow 관리자 초대";
+    public void sendInvitationEmail(String email, String temppassword, String condition) {
+        String subject = "compasstep 관리자 초대";
         String signupLink = invitationBaseUrl;
+        String htmlTemplate;
+        if(condition.equals("newuser")){
+            htmlTemplate = """
+                    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+                            <p style="font-size: 14px; color: #555;">
+                              <strong>From:</strong> Compassstep Admin &lt;no-reply@compasstep.com&gt;<br>
+                              <strong>To:</strong> inviteEmail
+                            </p>
+                            <p>
+                              <span style="background-color: #e0f2fe; color: #0c4a6e; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; margin-right: 5px;">#관리자 초대</span>
+                              <span style="background-color: #e0f2fe; color: #0c4a6e; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;">#임시 PW</span>
+                            </p>
+                            <h2 style="font-size: 24px; color: #111;">안녕하세요,</h2>
+                            <p style="font-size: 16px; line-height: 1.6;">
+                              Compassstep 관리자 콘솔에 초대되었습니다.<br>
+                              아래 임시 비밀번호로 로그인 후, 비밀번호를 변경해주세요.
+                            </p>
+                            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: left; margin: 24px 0;">
+                              <p style="margin: 0; font-size: 14px; color: #6b7280;">임시 비밀번호</p>
+                              <p style="margin: 10px 0 0; font-size: 24px; color: #111; font-weight: bold; letter-spacing: 2px;">newtemppassword</p>
+                            </div>
+                            <div style="text-align: center;">
+                              <a href="PLACEHOLDER_SIGNUP_LINK" target="_blank" style="display: inline-block; background-color: #111; color: #ffffff; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 12px;">비밀번호 변경하기</a>
+                              <br>
+                              <a href="PLACEHOLDER_SIGNUP_LINK" target="_blank" style="display: inline-block; color: #2563eb; text-decoration: none; margin-top: 16px; font-size: 14px;">브라우저에서 열기</a>
+                            </div>
+                            <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
+                            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; text-align: left;">
+                              <p><span style="background-color: #e5e7eb; color: #4b5563; padding: 4px 8px; border-radius: 15px; font-size: 12px; font-weight: bold;">보안 알림</span></p>
+                              <p style="font-size: 12px; color: #6b7280; line-height: 1.6;">
+                                이 메일은 발신 전용입니다. 문의: support@compasstep.com
+                              </p>
+                            </div>
+                            <p style="text-align: center; font-size: 12px; color: #9ca3af; margin-top: 24px;">© 2025 Compassstep. All rights reserved.</p>
+                          </div>""";
 
-        String htmlTemplate = """
-                <!doctype html>
-                <html lang="und" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-                <head>
-                  <title>Flow 관리자 초대</title>
-                  <!--[if !mso]><!-->
-                  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                  <!--<![endif]-->
-                  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1">
-                  <style type="text/css">
-                    #outlook a { padding: 0; }
-                    body { margin: 0; padding: 0; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-                    table, td { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-                    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
-                    p { display: block; margin: 13px 0; }
-                  </style>
-                  <!--[if mso]>
-                  <noscript>
-                  <xml>
-                  <o:OfficeDocumentSettings>
-                    <o:AllowPNG/>
-                    <o:PixelsPerInch>96</o:PixelsPerInch>
-                  </o:OfficeDocumentSettings>
-                  </xml>
-                  </noscript>
-                  <![endif]-->
-                  <!--[if lte mso 11]>
-                  <style type="text/css">
-                    .mj-outlook-group-fix { width:100% !important; }
-                  </style>
-                  <![endif]-->
-                  <!--[if !mso]><!-->
-                  <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700" rel="stylesheet" type="text/css">
-                  <style type="text/css">
-                    @import url(https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700);
-                  </style>
-                  <!--<![endif]-->
-                  <style type="text/css">
-                    @media only screen and (min-width:480px) {
-                      .mj-column-per-100 { width: 100% !important; max-width: 100%; }
-                    }
-                  </style>
-                  <style media="screen and (min-width:480px)">
-                    .moz-text-html .mj-column-per-100 { width: 100% !important; max-width: 100%; }
-                  </style>
-                  <style type="text/css">
-                    @media only screen and (max-width:479px) {
-                      table.mj-full-width-mobile { width: 100% !important; }
-                      td.mj-full-width-mobile { width: auto !important; }
-                    }
-                  </style>
-                  <style type="text/css">
-                    @keyframes fadeInUp {
-                      from { opacity: 0; transform: translateY(30px); }
-                      to { opacity: 1; transform: translateY(0); }
-                    }
-                    @keyframes pulse {
-                      0%, 100% { transform: scale(1); opacity: 1; }
-                      50% { transform: scale(1.05); opacity: 0.8; }
-                    }
-                    .fade-in { animation: fadeInUp 1s ease-out; }
-                    .logo-pulse { animation: pulse 2s infinite; }
-                    .invite-button { transition: all 0.3s ease !important; position: relative !important; overflow: hidden !important; }
-                  </style>
-                </head>
-                <body style="word-spacing:normal;">
-                  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">관리자 등록을 완료해주세요</div>
-                  <div style="" lang="und" dir="auto">
-                    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="fade-in-outlook" role="presentation" style="width:600px;" width="600" bgcolor="#E7ECF5" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-                    <div class="fade-in" style="background:#E7ECF5;background-color:#E7ECF5;margin:0px auto;border-radius:8px;max-width:600px;">
-                      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#E7ECF5;background-color:#E7ECF5;width:100%;border-radius:8px;">
-                        <tbody>
-                          <tr>
-                            <td style="direction:ltr;font-size:0px;padding:80px 20px;text-align:center;">
-                              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:560px;" ><![endif]-->
-                              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
-                                  <tbody>
-                                    <tr>
-                                      <td align="center" class="logo-pulse" style="font-size:0px;padding:10px 25px;padding-bottom:32px;word-break:break-word;">
-                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
-                                          <tbody>
-                                            <tr>
-                                              <td style="width:160px;">
-                                                <img alt="FLOW 아이콘" src="https://umc-perfume-bucket.s3.ap-northeast-1.amazonaws.com/FLOW_icon.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="160" height="auto" />
-                                              </td>
-                                            </tr>
-                                          </tbody>
-                                        </table>
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <td align="center" class="fade-in" style="font-size:0px;padding:10px 25px;padding-bottom:32px;word-break:break-word;">
-                                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:32px;font-weight:700;line-height:1;text-align:center;color:#202124;">Flow 관리자 초대</div>
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <td align="center" class="fade-in" style="font-size:0px;padding:10px 25px;padding-bottom:32px;word-break:break-word;">
-                                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:20px;line-height:1.5;text-align:center;color:#5f6368;">아래 링크를 통해 관리자 등록을 완료해주세요.<br> (링크는 12시간 동안 유효합니다)</div>
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <td align="center" class="invite-button" style="font-size:0px;padding:16px 32px;word-break:break-word;">
-                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;width:280px;line-height:100%;">
-                                          <tbody>
-                                            <tr>
-                                              <td align="center" bgcolor="#0F429D" role="presentation" style="border:none;border-radius:8px;cursor:auto;mso-padding-alt:10px 25px;background:#0F429D;" valign="middle">
-                                                <a href="PLACEHOLDER_SIGNUP_LINK" style="display:inline-block;width:230px;background:#0F429D;color:white;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;font-weight:600;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:8px;" target="_blank"> 회원가입 하러가기 </a>
-                                              </td>
-                                            </tr>
-                                          </tbody>
-                                        </table>
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </div>
-                              <!--[if mso | IE]></td></tr></table><![endif]-->
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <!--[if mso | IE]></td></tr></table><![endif]-->
-                  </div>
-                  asdf
-                </body>
-                </html>
-                """;
+        }
+        else{
+            htmlTemplate = """
+                    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+                            <p style="font-size: 14px; color: #555;">
+                              <strong>From:</strong> Compassstep Security &lt;no-reply@compasstep.com&gt;<br>
+                              <strong>To:</strong> inviteEmail
+                            </p>
+                            <p>
+                              <span style="background-color: #dcfce7; color: #166534; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;">#비밀번호 재설정</span>
+                            </p>
+                            <h2 style="font-size: 24px; color: #111;">요청하신 계정의 임시 비밀번호를 발급했습니다.</h2>
+                            <p style="font-size: 16px; line-height: 1.6;">
+                              아래 정보를 사용해 로그인하세요.
+                            </p>
+                            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: left; margin: 24px 0;">
+                              <p style="margin: 0 0 16px; font-size: 14px; color: #6b7280;">이메일</p>
+                              <p style="margin: 0 0 16px; font-size: 16px; color: #111; font-weight: bold;">${adminToReset.id}</p>
+                              <hr style="border: none; border-top: 1px solid #e5e7eb;">
+                              <p style="margin: 16px 0; font-size: 14px; color: #6b7280;">임시 비밀번호</p>
+                              <p style="margin: 0; font-size: 16px; color: #111; font-weight: bold; letter-spacing: 1px;">newtemppassword</p>
+                            </div>
+                            <div style="text-align: center;">
+                              <a href="PLACEHOLDER_SIGNUP_LINK" target="_blank" style="display: inline-block; background-color: #111; color: #ffffff; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 12px;">로그인 페이지</a>
+                            </div>
+                            <p style="text-align: center; font-size: 12px; color: #9ca3af; margin-top: 24px;">보안을 위해 최초 로그인 시 비밀번호 변경 절차가 진행됩니다.</p>
+                            <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
+                            <p style="text-align: center; font-size: 12px; color: #9ca3af;">
+                              문제가 있나요? support@compasstep.com 으로 문의해주세요.<br>
+                              © 2025 Compassstep. All rights reserved.
+                            </p>
+                          </div>""";
+        }
 
-        String htmlContent0 = htmlTemplate.replace("PLACEHOLDER_SIGNUP_LINK", "http://localhost:8080");
-        String htmlContent = htmlTemplate.replace("asdf", temppassword);
+
+
+
+        String htmlContent0 = htmlTemplate.replace("PLACEHOLDER_SIGNUP_LINK", signupLink);
+        String htmlContent1 = htmlContent0.replace("newtemppassword", temppassword);
+        String htmlContent = htmlContent1.replace("inviteEmail", email);
 
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
