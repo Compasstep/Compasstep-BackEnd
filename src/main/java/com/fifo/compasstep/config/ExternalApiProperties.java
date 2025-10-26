@@ -29,7 +29,16 @@ public class ExternalApiProperties {
 
     }
 
+    @Getter
+    @Setter
+    public static class Fastapi {              // ← 추가
+        private String baseUrl;
+        private int timeoutMs = 5000;
+    }
+
+
     private Spotify spotify;
     private Youtube youtube;
+    private Fastapi fastapi;
 }
 
