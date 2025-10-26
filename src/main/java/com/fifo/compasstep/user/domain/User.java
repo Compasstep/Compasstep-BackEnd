@@ -18,7 +18,6 @@ import java.util.List;
 @Entity
 @Table(name = "users") // user로 설정하면 예약어와 충돌해 오류 발생, users로 변경
 @Getter
-@Setter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert // null이 아닌 필드만으로 INSERT 쿼리를 생성
@@ -28,6 +27,7 @@ public class User extends BaseEntity {
     private String name;
 
     @Column(nullable = true)
+    @ColumnDefault("User")
     private String nickname;
 
     @Column(unique = true, nullable = false)
