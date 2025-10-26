@@ -6,6 +6,7 @@ import com.fifo.compasstep.admin.dto.AdminRequestDTO;
 import com.fifo.compasstep.admin.dto.AdminResponseDTO;
 import com.fifo.compasstep.admin.exceptions.AdminErrorStatus;
 import com.fifo.compasstep.admin.repository.AdminRepository;
+import com.fifo.compasstep.apipayload.ApiResponse;
 import com.fifo.compasstep.apipayload.exceptions.handler.AdminHandler;
 import com.fifo.compasstep.security.jwt.JwtProperties;
 import com.fifo.compasstep.security.jwt.JwtTokenProvider;
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j; // Slf4j import
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails; // UserDetails import
 import org.springframework.security.core.userdetails.UsernameNotFoundException; // Exception import
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,11 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j // 로그 사용을 위해 추가
 @Service
@@ -203,6 +202,98 @@ public class AdminService {
 
         refreshTokenService.removeRefreshTokenByUser(adminToDelete.getId(), "ADMIN");
     }
+
+    // changePassword 메소드는 현재 로그인한 관리자의 비밀번호를 변경하는 로직
+    // UserDetails에서 현재 관리자 ID를 가져와서 처리해야 합니다
+    @Transactional
+    public void changePassword(AdminRequestDTO.ChangePasswordRequestDTO request) {
+        // 패스워드 더블체크
+        if (!request.getPassword().equals(request.getDoubleCheck())) {
+            throw new AdminHandler(AdminErrorStatus.PASSWORD_NOT_MATCH);
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof AdminUserDetails)) {
+            // 인증 정보가 없거나, 예상치 못한 Principal 타입인 경우 예외 처리
+            throw new AdminHandler(AdminErrorStatus.ADMIN_NOT_FOUND); // 적절한 에러 상태 정의 필요
+        }
+        AdminUserDetails currentUserDetails = (AdminUserDetails) authentication.getPrincipal();
+        Long currentAdminId = currentUserDetails.getAdmin().getId();
+
+        Admin admin = adminRepository.findById(currentAdminId)
+                .orElseThrow(() -> new AdminHandler(AdminErrorStatus.ADMIN_NOT_FOUND));
+
+        admin.changePassword(passwordEncoder.encode(request.getPassword())); // 엔티티에 비밀번호 변경 메소드 추가 가정
+        // adminRepository.save(admin); // @Transactional이므로 자동 변경 감지 (Dirty Checking)
+    }
+
+    @Transactional
+    public void invite(AdminRequestDTO.InviteRequestDTO request) {
+        // 이미 가입된 이메일인지 확인
+        if (adminRepository.existsByEmail(request.getEmail())) {
+            throw new AdminHandler(AdminErrorStatus.EMAIL_ALREADY_EXISTS);
+        }
+
+        Map<String, String> tempPasswordInfo = makeTemPassword();
+        String tempPassword = tempPasswordInfo.get("temp");
+        String encodedPassword = tempPasswordInfo.get("encoded");
+
+        // Admin 객체 생성 및 저장
+        Admin newAdmin = Admin.builder()
+                .email(request.getEmail())
+                .password(encodedPassword)
+                .name("초대된 관리자") // 임시 이름 또는 DTO에서 받기
+                .role(Role.GENERAL) // 기본 역할은 GENERAL로 가정
+                .tempPwd(true) // 임시 비밀번호 상태
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        adminRepository.save(newAdmin);
+
+        // 이메일 발송
+        emailService.sendInvitationEmail(request.getEmail(), tempPassword, "newuser");
+    }
+
+    @Transactional
+    public void reissue(AdminRequestDTO.ReissueRequestDTO request) {
+        Long adminPKId = Long.valueOf(request.getAdminPKId());
+        Admin passwordChangeAdmin = adminRepository.findById(adminPKId)
+                .orElseThrow(() -> new AdminHandler(AdminErrorStatus.ADMIN_NOT_FOUND));
+
+        Map<String, String> tempPasswordInfo = makeTemPassword();
+        String tempPassword = tempPasswordInfo.get("temp");
+        String encodedPassword = tempPasswordInfo.get("encoded");
+
+        // 이메일 발송
+        emailService.sendInvitationEmail(passwordChangeAdmin.getEmail(), tempPassword, "changepassword");
+
+        // 비밀번호 업데이트 및 임시 비밀번호 상태 변경
+        passwordChangeAdmin.changePassword(encodedPassword); // 엔티티에 비밀번호 변경 메소드 추가 가정
+        passwordChangeAdmin.setTempPwd(true); // 임시 비밀번호 상태로 변경
+        // adminRepository.save(passwordChangeAdmin); // @Transactional
+    }
+
+    @Transactional
+    public AdminResponseDTO.AdminListResponseDTO getAllAdmins() {
+        // 1. DB에서 삭제되지 않은 모든 Admin 조회
+        //List<Admin> adminEntities = adminRepository.findAllByIsDeletedFalse(); // isDeleted가 false인 것만 조회 (Repository에 메소드 추가 필요)
+        List<Admin> adminEntities = adminRepository.findByRole(Role.GENERAL);
+
+        // 또는 List<Admin> adminEntities = adminRepository.findAll(); // 우선 모든 관리자 조회
+
+        // 2. Admin 엔티티 리스트를 AdminInfoDTO 리스트로 변환 (Java Stream API 사용)
+        List<AdminResponseDTO.AdminInfoDTO> adminInfoDTOs = adminEntities.stream()
+                .map(admin -> AdminResponseDTO.AdminInfoDTO.builder()
+                        .nickname(admin.getName()) // 엔티티의 name 필드를 nickname으로 매핑
+                        .email(admin.getEmail())
+                        .build())
+                .collect(Collectors.toList());
+
+        // 3. 최종 DTO로 감싸서 반환
+        return AdminResponseDTO.AdminListResponseDTO.builder()
+                .adminList(adminInfoDTOs)
+                .build();
+    }
+
     private Map<String, String> makeTemPassword() {
         Map<String, String> tempPassword = new HashMap<>();
         String temp = UUID.randomUUID().toString().substring(0, 8);
