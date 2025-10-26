@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class SongService {
     private final SongRepository songRepository;
 
+    @Transactional
     public StoreResponseDTO storeSong(StoreRequestDTO request) {
         // 현재 로그인된 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
