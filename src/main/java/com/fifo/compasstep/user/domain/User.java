@@ -7,10 +7,7 @@ import com.fifo.compasstep.reputationAnalysis.domain.ReputationAnalysis;
 import com.fifo.compasstep.song.domain.Song;
 import com.fifo.compasstep.user.enums.Status;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
@@ -30,6 +27,7 @@ public class User extends BaseEntity {
     private String name;
 
     @Column(nullable = true)
+    @ColumnDefault("User")
     private String nickname;
 
     @Column(unique = true, nullable = false)
