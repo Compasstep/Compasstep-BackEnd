@@ -24,8 +24,8 @@ public class ReputationAnalysisController {
             @AuthenticationPrincipal UserUserDetails currentUser
     ) {
         Long userId = currentUser.getUser().getId();
-        var res = service.getList(userId);
-        return new ApiResponse<>(200, "저장된 평판 분석 목록 조회를 성공했습니다.", res);
+        var result = service.getList(userId);
+        return ApiResponse.success(result);
     }
 
     /** 평판 분석 상세 조회 */
@@ -35,8 +35,8 @@ public class ReputationAnalysisController {
             @AuthenticationPrincipal UserUserDetails currentUser
     ) {
         Long userId = currentUser.getUser().getId();
-        var res = service.getDetail(historyId, userId);
-        return new ApiResponse<>(200, "평판 분석 상세 조회를 성공했습니다.", res);
+        var result = service.getDetail(historyId, userId);
+        return ApiResponse.success(result);
     }
 
     /** 저장된 평판 분석 삭제 */
@@ -47,6 +47,6 @@ public class ReputationAnalysisController {
     ) {
         Long userId = currentUser.getUser().getId();
         service.delete(historyId, userId);
-        return new ApiResponse<>(200, "성공했습니다", null);
+        return ApiResponse.success(null);
     }
 }
