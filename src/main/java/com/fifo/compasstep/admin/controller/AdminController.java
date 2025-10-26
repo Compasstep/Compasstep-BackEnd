@@ -53,4 +53,39 @@ public class AdminController {
         return ApiResponse.success(null);
     }
 
+    // 임시 비밀번호를 실제 비밀번호로 변경
+    @PatchMapping("/password/change")
+    @PreAuthorize("hasRole('GENERAL')")
+    public ApiResponse<Void> changePassword(
+            @Valid @RequestBody AdminRequestDTO.ChangePasswordRequestDTO request) {
+        adminService.changePassword(request);
+        return ApiResponse.success(null);
+    }
+
+    // 관리자 초대는 루트만 가능
+    @PostMapping("/password/invite")
+    @PreAuthorize("hasRole('ROOT')")
+    public ApiResponse<Void> inviteAdmin(
+            @RequestBody AdminRequestDTO.InviteRequestDTO request){
+        adminService.invite(request);
+        return ApiResponse.success(null);
+    }
+
+    //루트관리자가 타 관리자 비밀번호 재발급
+    @PatchMapping("/password/reissue")
+    @PreAuthorize("hasRole('ROOT')")
+    public ApiResponse<Void> reissueAdmin(
+            @Valid @RequestBody AdminRequestDTO.ReissueRequestDTO request){
+        adminService.reissue(request);
+        return ApiResponse.success(null);
+    }
+
+    // 관리자 전체 목록 조회
+    @GetMapping("/admins")
+    @PreAuthorize("hasRole('ROOT')")
+    public ApiResponse<AdminResponseDTO.AdminListResponseDTO> getAllAdmins() {
+        AdminResponseDTO.AdminListResponseDTO result = adminService.getAllAdmins();
+        return ApiResponse.success(result);
+    }
+
 }
