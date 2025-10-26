@@ -1,5 +1,6 @@
 package com.fifo.compasstep.user.service;
 
+import com.fifo.compasstep.apipayload.exceptions.handler.UserHandler;
 import com.fifo.compasstep.security.jwt.JwtProperties;
 import com.fifo.compasstep.security.jwt.JwtTokenProvider;
 import com.fifo.compasstep.security.service.RefreshTokenService;
@@ -11,6 +12,7 @@ import com.fifo.compasstep.user.domain.User;
 import com.fifo.compasstep.user.dto.GoogleUserInfo;
 import com.fifo.compasstep.user.dto.UserRequestDTO;
 import com.fifo.compasstep.user.dto.UserResponseDTO;
+import com.fifo.compasstep.user.exceptions.UserErrorStatus;
 import com.fifo.compasstep.user.repository.UserRepository;
 import com.fifo.compasstep.user.tokenVerifier.GoogleTokenVerifier;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +23,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -111,8 +115,33 @@ public class UserService {
         cookieUtil.deleteCsrfTokenCookie(response);
     }
 
+    public void signout(HttpServletRequest request, HttpServletResponse response) {
+        // 현재 로그인된 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserUserDetails)) {
+            // 인증 정보가 없거나, 예상치 못한 Principal 타입인 경우 예외 처리
+            throw new UserHandler(UserErrorStatus.USER_NOT_FOUND); // 적절한 에러 상태 정의 필요
+        }
+        // 현재 로그인 된 사용자를 가져온 뒤 익명화
+        UserUserDetails currentUserDetails = (UserUserDetails) authentication.getPrincipal();
+        User currentuser = currentUserDetails.getUser();
+        currentuser.anonymize();
+
+        logout(request, response);
+    }
+
     public UserResponseDTO.generatePresignedUrlResponseDTO generateUrl(
             UserRequestDTO.generatePresignedUrlRequestDTO request, HttpServletResponse response) {
         return s3Service.generatePresignedUrl(request);
     }
+
+    public UserResponseDTO.downloadUrlResponseDTO generateDownloadUrl(
+            UserRequestDTO.downloadUrlRequestDTO request){
+        String presignedUrl = s3Service.generatePresignedUrlForDownload(request.getFileKey(), request.getOriginalFileName(), 3600);
+
+        return UserResponseDTO.downloadUrlResponseDTO.builder()
+                .presignedUrl(presignedUrl)
+                .build();
+    }
+
 }

@@ -25,4 +25,15 @@ public class UserRequestDTO {
         @NonNull
         private String originalFileName;
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class downloadUrlRequestDTO {
+        @NonNull
+        private String fileKey;
+        @NonNull
+        private String originalFileName;
+    }
 }
