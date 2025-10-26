@@ -1,17 +1,19 @@
 // src/main/java/com/fifo/compasstep/reference/service/GenreRankingService.java
 package com.fifo.compasstep.reference.service;
 
-import com.fifo.compasstep.apipayload.exceptions.GeneralException;
+import com.fifo.compasstep.apipayload.exceptions.handler.ReferenceHandler;
 import com.fifo.compasstep.reference.client.SpotifyClient;
 import com.fifo.compasstep.reference.dto.RankingItemDto;
 import com.fifo.compasstep.reference.dto.ReferenceRequestDto;
 import com.fifo.compasstep.reference.exceptions.ReferenceErrorStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; //
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GenreRankingService {
@@ -23,17 +25,21 @@ public class GenreRankingService {
     /** Spotify 장르 기반 인기 트랙 */
     @Transactional(readOnly = true)
     public List<RankingItemDto> getGenreRanking(ReferenceRequestDto req) {
+
         // 1) 입력 검증 (서비스 주도)
         if (req == null) {
-            throw new GeneralException(ReferenceErrorStatus.INVALID_REQUEST);
+            log.warn("[GenreRanking] null request");
+            throw new ReferenceHandler(ReferenceErrorStatus.INVALID_REQUEST);
         }
         final String genre = trimToNull(req.genre());
         if (genre == null) {
-            throw new GeneralException(ReferenceErrorStatus.GENRE_PARAM_MISSING);
+            log.warn("[GenreRanking] missing genre param. req={}", req);
+            throw new ReferenceHandler(ReferenceErrorStatus.GENRE_PARAM_MISSING);
         }
         final int limit = req.limitOrDefault();
         if (limit <= 0) {
-            throw new GeneralException(ReferenceErrorStatus.LIMIT_PARAM_INVALID); // 선택 추가했으면 사용, 없으면 INVALID_REQUEST
+            log.warn("[GenreRanking] invalid limit. limit={}", limit);
+            throw new ReferenceHandler(ReferenceErrorStatus.LIMIT_PARAM_INVALID);
         }
 
         try {
@@ -45,6 +51,10 @@ public class GenreRankingService {
 
             // 3) 아이템 추출 → popularity DESC → limit → rank 부여
             final List<Map<String, Object>> items = extractTrackItems(json);
+            if (items.isEmpty()) {
+                log.info("[GenreRanking] no items from Spotify. genre={}, market={}, limit={}",
+                        genre, req.marketOrDefault(), limit);
+            }
 
             final List<Map<String, Object>> sorted = items.stream()
                     .sorted((a, b) -> Integer.compare(getPopularity(b), getPopularity(a)))
@@ -58,15 +68,21 @@ public class GenreRankingService {
             }
             return result;
 
-        } catch (GeneralException ge) {
-            // 우리 커스텀 예외는 그대로 전파
-            throw ge;
+        } catch (ReferenceHandler rh) {
+            // 도메인 커스텀 예외는 그대로 전파
+            throw rh;
+
         } catch (RuntimeException re) {
-            // 외부 API/파싱 등 런타임 예외는 외부 오류로 통일 변환(로그는 Advice에서)
-            throw new GeneralException(ReferenceErrorStatus.EXTERNAL_API_ERROR);
+            // 외부 API/파싱 등 런타임 예외: 통일 변환 + 구체 로그
+            log.error("[GenreRanking] runtime error while calling Spotify. genre={}, market={}, limit={}",
+                    genre, req.marketOrDefault(), limit, re);
+            throw new ReferenceHandler(ReferenceErrorStatus.EXTERNAL_API_ERROR);
+
         } catch (Exception e) {
             // checked 예외도 동일 정책
-            throw new GeneralException(ReferenceErrorStatus.EXTERNAL_API_ERROR);
+            log.error("[GenreRanking] unexpected error. genre={}, market={}, limit={}",
+                    genre, req.marketOrDefault(), limit, e);
+            throw new ReferenceHandler(ReferenceErrorStatus.EXTERNAL_API_ERROR);
         }
     }
 
