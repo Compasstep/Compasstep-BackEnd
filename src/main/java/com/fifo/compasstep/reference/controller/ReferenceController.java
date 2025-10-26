@@ -35,10 +35,10 @@ public class ReferenceController {
             @RequestParam(required = false) String market,
             @RequestParam(required = false) @Min(1) @Max(50) Integer limit
     ) {
-        List<RankingItemDto> list = genreRankingService.getGenreRanking(
+        List<RankingItemDto> result = genreRankingService.getGenreRanking(
                 new ReferenceRequestDto(genre, market, limit)
         );
-        return new ApiResponse<>(200, "장르별 랭킹 조회를 성공했습니다.", list);
+        return ApiResponse.success(result);
     }
 
     @GetMapping("/youtube-link")
@@ -47,9 +47,9 @@ public class ReferenceController {
             @RequestParam @NotBlank(message = "곡 제목을 지정해주세요.") String title,
             @RequestParam @NotBlank(message = "아티스트 이름을 지정해주세요.") String artist
     ) {
-        YoutubeLinkResponseDto res = youtubeLinkService.getYoutubeLink(
+        YoutubeLinkResponseDto result = youtubeLinkService.getYoutubeLink(
                 new YoutubeLinkRequestDto(title, artist)
         );
-        return new ApiResponse<>(200, "유튜브 링크 조회를 성공했습니다.", res);
+        return ApiResponse.success(result);
     }
 }
