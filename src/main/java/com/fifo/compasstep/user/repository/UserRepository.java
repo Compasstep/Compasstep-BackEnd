@@ -15,7 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 조회용
     Optional<User> findByEmail(String email);
     Optional<User> findById(Long id);
-
+    boolean existsByNickname(String nickname);
     // 수정용 (벌크 업데이트)
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional

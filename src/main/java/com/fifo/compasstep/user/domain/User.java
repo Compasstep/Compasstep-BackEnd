@@ -7,10 +7,7 @@ import com.fifo.compasstep.reputationAnalysis.domain.ReputationAnalysis;
 import com.fifo.compasstep.song.domain.Song;
 import com.fifo.compasstep.user.enums.Status;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
@@ -21,6 +18,7 @@ import java.util.List;
 @Entity
 @Table(name = "users") // user로 설정하면 예약어와 충돌해 오류 발생, users로 변경
 @Getter
+@Setter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert // null이 아닌 필드만으로 INSERT 쿼리를 생성
