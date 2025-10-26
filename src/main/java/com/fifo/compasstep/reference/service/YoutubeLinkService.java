@@ -3,8 +3,8 @@ package com.fifo.compasstep.reference.service;
 
 import com.fifo.compasstep.apipayload.exceptions.handler.ReferenceHandler;
 import com.fifo.compasstep.reference.client.YoutubeClient;
-import com.fifo.compasstep.reference.dto.YoutubeLinkRequestDto;
-import com.fifo.compasstep.reference.dto.YoutubeLinkResponseDto;
+import com.fifo.compasstep.reference.dto.YoutubeLinkRequestDTO;
+import com.fifo.compasstep.reference.dto.YoutubeLinkResponseDTO;
 import com.fifo.compasstep.reference.exceptions.ReferenceErrorStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ public class YoutubeLinkService {
 
     /** 특정 곡의 유튜브 상위 링크 반환(없으면 404 매핑) */
     @Transactional(readOnly = true)
-    public YoutubeLinkResponseDto getYoutubeLink(YoutubeLinkRequestDto req) {
+    public YoutubeLinkResponseDTO getYoutubeLink(YoutubeLinkRequestDTO req) {
         // 1) 입력 검증
         if (req == null) {
             log.warn("[YoutubeLink] null request");
@@ -46,7 +46,7 @@ public class YoutubeLinkService {
                 log.info("[YoutubeLink] video not found. title='{}', artist='{}'", title, artist);
                 throw new ReferenceHandler(ReferenceErrorStatus.YOUTUBE_VIDEO_NOT_FOUND);
             }
-            return new YoutubeLinkResponseDto(title, artist, url);
+            return new YoutubeLinkResponseDTO(title, artist, url);
 
         } catch (ReferenceHandler rh) {
             // 도메인 예외는 그대로 전파
