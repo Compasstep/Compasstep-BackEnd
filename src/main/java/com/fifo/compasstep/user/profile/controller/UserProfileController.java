@@ -25,7 +25,7 @@ public class UserProfileController {
     ) {
         Long userId = currentUser.getUser().getId();
         var result = service.getProfileInfo(userId);
-        return new ApiResponse<>(200, "사용자 프로필 정보 조회를 성공했습니다.", result);
+        return ApiResponse.success(result);
     }
 
     @PatchMapping("/image")
@@ -35,7 +35,7 @@ public class UserProfileController {
     ) {
         Long userId = currentUser.getUser().getId();
         service.updateProfileImage(userId, req.getFileKey());
-        return new ApiResponse<>(200, "프로필 이미지가 성공적으로 변경되었습니다.", null);
+        return ApiResponse.success(null);
     }
 
     @PatchMapping("/nickname")
@@ -45,6 +45,6 @@ public class UserProfileController {
     ) {
         Long userId = currentUser.getUser().getId();
         service.updateNickname(userId, req.getNickname());
-        return new ApiResponse<>(200, "닉네임이 성공적으로 변경되었습니다.", null);
+        return ApiResponse.success(null);
     }
 }
