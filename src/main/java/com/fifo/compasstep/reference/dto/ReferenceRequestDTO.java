@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
-public record ReferenceRequestDto(
+public record ReferenceRequestDTO(
         @NotBlank String genre,
         String market,
         @Min(1) @Max(50) Integer limit
