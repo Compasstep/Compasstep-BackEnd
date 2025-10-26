@@ -29,7 +29,7 @@ public class PostController {
     ) {
         Long userId = currentUser.getUser().getId();
         var result = postService.createPost(userId, request);
-        return new ApiResponse<>(200, "지인 평가 공유 게시글을 성공적으로 생성했습니다.", result);
+        return ApiResponse.success(result);
     }
 
     /** 게시글 목록 조회 (마이페이지) */
@@ -38,8 +38,8 @@ public class PostController {
             @AuthenticationPrincipal UserUserDetails currentUser
     ) {
         Long userId = currentUser.getUser().getId();
-        var list = postService.getMyPosts(userId);
-        return new ApiResponse<>(200, "나의 지인 평가 목록 조회를 성공했습니다.", list);
+        var result = postService.getMyPosts(userId);
+        return ApiResponse.success(result);
     }
 
     /** 게시글 삭제 */
@@ -50,6 +50,6 @@ public class PostController {
     ) {
         Long userId = currentUser.getUser().getId();
         postService.deletePost(userId, postId);
-        return new ApiResponse<>(200, "성공했습니다", null);
+        return ApiResponse.success(null);
     }
 }

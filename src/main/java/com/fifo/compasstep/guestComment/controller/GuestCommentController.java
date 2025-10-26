@@ -21,6 +21,6 @@ public class GuestCommentController {
             @Valid @RequestBody CreateGuestCommentRequest request
     ) {
         guestCommentService.createComment(postId, request);
-        return new ApiResponse<>(200, "댓글을 성공적으로 작성했습니다.", null);
+        return ApiResponse.success(null);
     }
 }

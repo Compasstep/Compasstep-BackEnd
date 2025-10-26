@@ -16,7 +16,7 @@ public class PostPublicController {
     /** 게시글 상세 조회 (게스트 접근 가능) */
     @GetMapping("/posts/{postId}")
     public ApiResponse<PostDetailResponse> getPostDetail(@PathVariable Long postId) {
-        var detail = postService.getPostDetail(postId);
-        return new ApiResponse<>(200, "지인 평가 상세 조회를 성공했습니다.", detail);
+        var result = postService.getPostDetail(postId);
+        return ApiResponse.success(result);
     }
 }
