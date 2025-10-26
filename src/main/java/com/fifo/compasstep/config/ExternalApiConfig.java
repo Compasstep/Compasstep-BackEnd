@@ -48,4 +48,17 @@ public class ExternalApiConfig {
                 ))
                 .build();
     }
+
+    @Bean("fastApiClient")
+    @Lazy
+    public WebClient fastApiClient() {
+        var cfg = props.getFastapi(); // ← ExternalApiProperties에 fastapi 추가 (아래 2번)
+        return WebClient.builder()
+                .baseUrl(cfg.getBaseUrl())
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create().responseTimeout(Duration.ofMillis(cfg.getTimeoutMs()))
+                ))
+                .defaultHeader("Content-Type", "application/json")
+                .build();
+    }
 }

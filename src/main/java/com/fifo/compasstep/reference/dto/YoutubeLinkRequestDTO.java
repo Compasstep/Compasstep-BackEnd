@@ -3,7 +3,7 @@ package com.fifo.compasstep.reference.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record YoutubeLinkRequestDto(
+public record YoutubeLinkRequestDTO(
         @NotBlank String title,
         @NotBlank String artist   // optional
 ) {}
