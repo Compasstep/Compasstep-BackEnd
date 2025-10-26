@@ -9,10 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -38,10 +35,23 @@ public class UserController {
         return ApiResponse.success(null);
     }
 
+    @DeleteMapping("/auth/signout")
+    public ApiResponse<Void> signout(HttpServletRequest request, HttpServletResponse response) {
+        userService.signout(request, response);
+        return ApiResponse.success(null);
+    }
+
     @PostMapping("/files/url")
     public ApiResponse<UserResponseDTO.generatePresignedUrlResponseDTO> generatePresignedUrl(
             UserRequestDTO.generatePresignedUrlRequestDTO request, HttpServletResponse response) {
         UserResponseDTO.generatePresignedUrlResponseDTO result = userService.generateUrl(request, response);
+        return ApiResponse.success(result);
+    }
+
+    @PostMapping("/files/download")
+    public ApiResponse<UserResponseDTO.downloadUrlResponseDTO> download(
+            @RequestBody UserRequestDTO.downloadUrlRequestDTO request) {
+        UserResponseDTO.downloadUrlResponseDTO result = userService.generateDownloadUrl(request);
         return ApiResponse.success(result);
     }
 }

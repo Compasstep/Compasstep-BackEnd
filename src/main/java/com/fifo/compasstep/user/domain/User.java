@@ -1,5 +1,6 @@
 package com.fifo.compasstep.user.domain;
 
+import com.fifo.compasstep.admin.enums.Role;
 import com.fifo.compasstep.chat.domain.Chat;
 import com.fifo.compasstep.common.domain.BaseEntity;
 import com.fifo.compasstep.lyrics.domain.Lyrics;
@@ -14,6 +15,7 @@ import org.hibernate.annotations.DynamicInsert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users") // user로 설정하면 예약어와 충돌해 오류 발생, users로 변경
@@ -72,5 +74,19 @@ public class User extends BaseEntity {
         this.s3FileImage = s3FileImage;
         // status, isDeleted 등은 DB 기본값이나 @ColumnDefault를 따름
         this.isDeleted = false;
+    }
+
+    public void changeStatus(Status newStatus) {
+        this.status = newStatus;
+    }
+
+    public void anonymize() {
+        // 개인 식별 정보를 정해진 더미 값으로 변경
+        this.name = "탈퇴된 사용자" + this.name;
+        this.nickname = "탈퇴된 사용자" + this.nickname;
+        this.email = "탈퇴된 사용자" + this.email;
+        // 로그인 방지를 위해 비밀번호는 사용 불가능한 임의의 값으로 설정
+        this.status = Status.DELETED;
+        this.isDeleted = true;
     }
 }

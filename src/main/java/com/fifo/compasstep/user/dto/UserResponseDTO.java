@@ -1,8 +1,6 @@
 package com.fifo.compasstep.user.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
+import lombok.*;
 
 public class UserResponseDTO {
     @Getter
@@ -18,5 +16,14 @@ public class UserResponseDTO {
         private String presignedUrl;
         @NonNull
         private String fileKey;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class downloadUrlResponseDTO {
+        @NonNull
+        private String presignedUrl;
     }
 }
