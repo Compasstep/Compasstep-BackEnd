@@ -14,6 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -88,4 +90,27 @@ public class AdminController {
         return ApiResponse.success(result);
     }
 
+    @GetMapping("/users/malicious")
+    public ApiResponse<List<AdminResponseDTO.MaliciousResponseDTO>> getMaliciousUsers() {
+        List<AdminResponseDTO.MaliciousResponseDTO> result = adminService.getMaliciousUsers();
+        return  ApiResponse.success(result);
+    }
+
+    @GetMapping("users/logs/{userPKId}")
+    public ApiResponse<AdminResponseDTO.ChatLogsListDTO> getUserChatLogs(@PathVariable Long userPKId) {
+        AdminResponseDTO.ChatLogsListDTO result = adminService.getUserChatLogs(userPKId);
+        return ApiResponse.success(result);
+    }
+
+    @PatchMapping("/users/ban/{userPKId}")
+    public ApiResponse<Void> banUser(@PathVariable Long userPKId) {
+        adminService.banUser(userPKId);
+        return ApiResponse.success(null);
+    }
+
+    @PatchMapping("/users/unban/{userPKId}")
+    public ApiResponse<Void> unbanUser(@PathVariable Long userPKId) {
+        adminService.unbanUser(userPKId);
+        return ApiResponse.success(null);
+    }
 }
