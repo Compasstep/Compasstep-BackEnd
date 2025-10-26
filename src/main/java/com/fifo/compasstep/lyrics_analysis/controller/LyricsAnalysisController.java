@@ -24,7 +24,7 @@ public class LyricsAnalysisController {
     ) {
         Long userId = currentUser.getUser().getId();
         var result = lyricsAnalysisService.getList(userId);
-        return new ApiResponse<>(200, "저장된 가사 분석 목록 조회가 성공했습니다.", result);
+        return ApiResponse.success(result);
     }
 
     /** 저장된 가사 분석 상세 조회 */
@@ -35,7 +35,7 @@ public class LyricsAnalysisController {
     ) {
         Long userId = currentUser.getUser().getId();
         var result = lyricsAnalysisService.getDetail(analysisId, userId);
-        return new ApiResponse<>(200, "저장된 가사 분석 상세 조회가 성공했습니다.", result);
+        return ApiResponse.success(result);
     }
 
     /** 저장된 가사 분석 삭제 */
@@ -46,6 +46,6 @@ public class LyricsAnalysisController {
     ) {
         Long userId = currentUser.getUser().getId();
         lyricsAnalysisService.delete(analysisId, userId);
-        return new ApiResponse<>(200, "성공했습니다.", null);
+        return ApiResponse.success(null);
     }
 }
