@@ -242,12 +242,13 @@ public class AdminService {
         Map<String, String> tempPasswordInfo = makeTemPassword();
         String tempPassword = tempPasswordInfo.get("temp");
         String encodedPassword = tempPasswordInfo.get("encoded");
+        String adminName = request.getAdminname();
 
         // Admin 객체 생성 및 저장
         Admin newAdmin = Admin.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
-                .name("초대된 관리자") // 임시 이름 또는 DTO에서 받기
+                .name(adminName) // 임시 이름 또는 DTO에서 받기
                 .role(Role.GENERAL) // 기본 역할은 GENERAL로 가정
                 .tempPwd(true) // 임시 비밀번호 상태
                 .createdAt(LocalDateTime.now())

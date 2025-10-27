@@ -26,6 +26,7 @@ public class AdminRequestDTO {
     @AllArgsConstructor
     public static class InviteRequestDTO {
         private String email;
+        private String adminname;
     }
 
     @Getter
