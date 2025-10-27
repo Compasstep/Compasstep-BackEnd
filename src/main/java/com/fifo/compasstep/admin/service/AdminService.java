@@ -303,7 +303,7 @@ public class AdminService {
     @Transactional
     public List<AdminResponseDTO.MaliciousResponseDTO> getMaliciousUsers() {
         List<User> maliciousUser = userRepository.findByStatusIn(
-                List.of(Status.SUSPENDED, Status.DELETED)
+                List.of(Status.SUSPENDED, Status.BLOCKED)
         );
 
         return maliciousUser.stream()
