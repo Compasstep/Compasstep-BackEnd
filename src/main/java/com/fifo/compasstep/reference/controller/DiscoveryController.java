@@ -8,6 +8,7 @@ import com.fifo.compasstep.reference.service.DiscoveryService;
 import com.fifo.compasstep.security.userDetails.UserUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,7 @@ public class DiscoveryController {
 
     /** 키워드 기반 레퍼런스 탐색 (FastAPI 프록시) */
     @PostMapping("/discovery/keyword")
+    @PreAuthorize("hasAuthority('STATUS_NORMAL')")
     public ApiResponse<List<TrackVideoDto>> discoveryKeyword(
             @Valid @RequestBody DiscoveryKeywordRequestDto req,
             @AuthenticationPrincipal UserUserDetails currentUser

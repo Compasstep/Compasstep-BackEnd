@@ -1,6 +1,8 @@
 package com.fifo.compasstep.apipayload.exceptions;
 
+import com.fifo.compasstep.admin.exceptions.AdminErrorStatus;
 import com.fifo.compasstep.apipayload.ApiResponse;
+import com.fifo.compasstep.apipayload.code.BaseErrorCode;
 import com.fifo.compasstep.apipayload.code.ErrorReasonDTO;
 import com.fifo.compasstep.reference.exceptions.ReferenceErrorStatus;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +16,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.nio.file.AccessDeniedException;
 import java.security.GeneralSecurityException;
 
 @Slf4j
@@ -51,12 +54,29 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, r, null, request);
     }
 
-    /** 마지막 안전망 → 500 */
-    @ExceptionHandler(Exception.class)
-    @SuppressWarnings("unused")
-    public ResponseEntity<Object> handleUnknown(Exception e, HttpServletRequest request) {
-        log.error("Unhandled exception", e);
-        var r = ReferenceErrorStatus.EXTERNAL_API_ERROR.getReasonHttpStatus();
-        return handleExceptionInternal(e, r, null, request);
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+        // 1. 미리 정의된 에러 코드/상태를 가져옵니다 (예: SecurityErrorStatus.ACCESS_DENIED)
+        BaseErrorCode errorCode = AdminErrorStatus.ACCESS_DENIED; // ACCESS_DENIED를 SecurityErrorStatus에 정의해야 함
+
+        // 2. ApiResponse 형식으로 실패 응답 본문을 만듭니다.
+        ApiResponse<Object> body = ApiResponse.onFailure(
+                errorCode.getReason().getCode(),    // 예: "AUTH003"
+                errorCode.getReason().getMessage(), // 예: "접근 권한이 없습니다."
+                null                               // 추가 데이터 없음
+        );
+
+        // 3. ResponseEntity에 본문과 HTTP 상태 코드(403 Forbidden)를 담아 반환합니다.
+        return ResponseEntity.status(errorCode.getReasonHttpStatus().getHttpStatus()) // HttpStatus.FORBIDDEN
+                .body(body);
     }
+
+//    /** 마지막 안전망 → 500 */
+//    @ExceptionHandler(Exception.class)
+//    @SuppressWarnings("unused")
+//    public ResponseEntity<Object> handleUnknown(Exception e, HttpServletRequest request) {
+//        log.error("Unhandled exception", e);
+//        var r = ReferenceErrorStatus.EXTERNAL_API_ERROR.getReasonHttpStatus();
+//        return handleExceptionInternal(e, r, null, request);
+//    }
 }

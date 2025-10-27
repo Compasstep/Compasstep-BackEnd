@@ -17,6 +17,7 @@ public enum AdminErrorStatus implements BaseErrorCode {
     ANOTHER_ERROR(HttpStatus.NOT_FOUND, 500, "다른 오류."),
     ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, 403, "관리자가 없습니다."),
     ADMIN_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, 401, "아이디 혹은 비밀번호가 틀렸습니다."),
+    ACCESS_DENIED(HttpStatus.UNAUTHORIZED, 403, "권한이 없어 요청이 거부되었습니다"),
     REDIS_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Redis 오류가 발생했습니다."),
 
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, 401, "리프레시 토큰을 찾을 수 없습니다."),

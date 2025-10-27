@@ -8,6 +8,9 @@ import com.fifo.compasstep.admin.exceptions.AdminErrorStatus;
 import com.fifo.compasstep.admin.repository.AdminRepository;
 import com.fifo.compasstep.apipayload.ApiResponse;
 import com.fifo.compasstep.apipayload.exceptions.handler.AdminHandler;
+import com.fifo.compasstep.apipayload.exceptions.handler.UserHandler;
+import com.fifo.compasstep.chat.domain.Chat;
+import com.fifo.compasstep.chat.repository.ChatRepository;
 import com.fifo.compasstep.security.jwt.JwtProperties;
 import com.fifo.compasstep.security.jwt.JwtTokenProvider;
 import com.fifo.compasstep.security.service.RefreshTokenService;
@@ -15,6 +18,8 @@ import com.fifo.compasstep.security.userDetails.AdminUserDetails;
 import com.fifo.compasstep.security.userDetails.UserUserDetails; // UserUserDetails import
 import com.fifo.compasstep.security.util.CookieUtil;
 import com.fifo.compasstep.user.domain.User; // User import
+import com.fifo.compasstep.user.enums.Status;
+import com.fifo.compasstep.user.exceptions.UserErrorStatus;
 import com.fifo.compasstep.user.repository.UserRepository; // UserRepository import
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,6 +52,7 @@ public class AdminService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final UserRepository userRepository; // refreshToken 로직에서 User 조회용
+    private final ChatRepository chatRepository;
 
     @Transactional
     public AdminResponseDTO.LoginResponseDTO login(AdminRequestDTO.AdminLoginRequestDTO request, HttpServletResponse response) {
@@ -236,12 +242,13 @@ public class AdminService {
         Map<String, String> tempPasswordInfo = makeTemPassword();
         String tempPassword = tempPasswordInfo.get("temp");
         String encodedPassword = tempPasswordInfo.get("encoded");
+        String adminName = request.getAdminname();
 
         // Admin 객체 생성 및 저장
         Admin newAdmin = Admin.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
-                .name("초대된 관리자") // 임시 이름 또는 DTO에서 받기
+                .name(adminName) // 임시 이름 또는 DTO에서 받기
                 .role(Role.GENERAL) // 기본 역할은 GENERAL로 가정
                 .tempPwd(true) // 임시 비밀번호 상태
                 .createdAt(LocalDateTime.now())
@@ -292,6 +299,63 @@ public class AdminService {
         return AdminResponseDTO.AdminListResponseDTO.builder()
                 .adminList(adminInfoDTOs)
                 .build();
+    }
+
+    @Transactional
+    public List<AdminResponseDTO.MaliciousResponseDTO> getMaliciousUsers() {
+        List<User> maliciousUser = userRepository.findByStatusIn(
+                List.of(Status.SUSPENDED, Status.BLOCKED)
+        );
+
+        return maliciousUser.stream()
+                .map(user -> AdminResponseDTO.MaliciousResponseDTO.builder()
+                        .userId(user.getId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .status(user.getStatus())
+                        .createdAt(user.getCreatedAt()) // BaseEntity의 createdAt 사용
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public AdminResponseDTO.ChatLogsListDTO getUserChatLogs(Long userPKId) {
+        // 1. userId로 User 엔티티 조회 (없으면 예외 발생)
+        User user = userRepository.findById(userPKId)
+                .orElseThrow(() -> new UserHandler(UserErrorStatus.USER_NOT_FOUND));
+
+        // 2. ChatRepository를 이용해 해당 User의 최신 채팅 20개 조회
+        List<Chat> recentChats = chatRepository.findTop20ByUserOrderByCreatedAtDesc(user);
+
+        // 3. Chat 엔티티 List를 ChatLogs DTO List로 변환
+        List<AdminResponseDTO.ChatLogs> chatLogsList = recentChats.stream()
+                .map(chat -> AdminResponseDTO.ChatLogs.builder()
+                        .chatId(chat.getId())
+                        .createdAt(chat.getCreatedAt())
+                        .content(chat.getContent())
+                        .isGuardrailed(chat.getIsGuardrailed())
+                        .build())
+                .collect(Collectors.toList());
+        // 4. 최종 ChatLogsListDTO로 감싸서 반환
+        return AdminResponseDTO.ChatLogsListDTO.builder()
+                .chatLogs(chatLogsList)
+                .build();
+
+    }
+
+    @Transactional
+    public void banUser(Long userPKId) {
+        User user = userRepository.findById(userPKId)
+                .orElseThrow(() -> new UserHandler(UserErrorStatus.USER_NOT_FOUND));
+
+        user.changeStatus(Status.BLOCKED);
+    }
+
+    @Transactional
+    public void unbanUser(Long userPKId) {
+        User user = userRepository.findById(userPKId)
+                .orElseThrow(() -> new UserHandler(UserErrorStatus.USER_NOT_FOUND));
+        user.changeStatus(Status.NORMAL);
     }
 
     private Map<String, String> makeTemPassword() {
