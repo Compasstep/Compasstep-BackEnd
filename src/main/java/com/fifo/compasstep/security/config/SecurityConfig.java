@@ -28,6 +28,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AdminUserDetailsService adminUserDetailsService;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final CustomAccessDenyHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,9 +37,11 @@ public class SecurityConfig {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .exceptionHandling()
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .and()
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 안 된 접근 -> 401
+                        .accessDeniedHandler(customAccessDeniedHandler)     // 인증 됐지만 권한 부족 -> 403 <-- 추가!
+                )
+                
                 .authorizeHttpRequests(auth -> auth
                         //로그인 밑 회원가입 경로 전부 허용
                         .requestMatchers("/api/admin/login", "/api/admin/logout", "/auth/oauth/**", "/api/admin/refresh",
