@@ -4,6 +4,7 @@ package com.fifo.compasstep.post.controller;
 import com.fifo.compasstep.apipayload.ApiResponse;
 import com.fifo.compasstep.post.dto.request.CreatePostRequest;
 import com.fifo.compasstep.post.dto.response.CreatePostResponse;
+import com.fifo.compasstep.post.dto.response.PostAnalysisResponse;
 import com.fifo.compasstep.post.dto.response.PostListItemDto;
 import com.fifo.compasstep.post.service.PostService;
 import com.fifo.compasstep.security.userDetails.UserUserDetails;
@@ -39,6 +40,17 @@ public class PostController {
     ) {
         Long userId = currentUser.getUser().getId();
         var result = postService.getMyPosts(userId);
+        return ApiResponse.success(result);
+    }
+
+    /** 게시글 분석 조회 */
+    @GetMapping("/posts/{postId}/analysis")
+    public ApiResponse<PostAnalysisResponse> getMyPostAnalysis(
+            @AuthenticationPrincipal UserUserDetails currentUser,
+            @PathVariable Long postId
+    ) {
+        Long userId = currentUser.getUser().getId();
+        var result = postService.getMyPostAnalysis(userId, postId);
         return ApiResponse.success(result);
     }
 

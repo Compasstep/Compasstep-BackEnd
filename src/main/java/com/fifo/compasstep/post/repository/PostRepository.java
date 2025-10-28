@@ -17,6 +17,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     Optional<Post> findBySong_Id(Long songId); // 중복생성 방지 용도
 
+    Optional<Post> findByIdAndSong_User_Id(Long postId, Long userId);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from Post p where p.id = :postId and p.song.user.id = :userId")
     int deleteByIdAndOwner(@Param("postId") Long postId, @Param("userId") Long userId);

@@ -40,16 +40,16 @@ public class Post extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private JsonNode keywords;       // null 가능
 
+    @Column(name = "analyzed", nullable = false)
+    @Builder.Default
+    private boolean analyzed = false;
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<GuestComment> guestComments = new ArrayList<>();
 
     public static Post create(
-            Song song,
-            JsonNode shareSummary,
-            JsonNode shareDetails,
-            String postName,
-            JsonNode keywords
+            Song song, JsonNode shareSummary, JsonNode shareDetails, String postName, JsonNode keywords
     ) {
         Post post = Post.builder()
                 .song(song)
@@ -57,6 +57,7 @@ public class Post extends BaseEntity {
                 .shareDetails(shareDetails)
                 .postName(postName)
                 .keywords(keywords)
+                .analyzed(false)
                 .build();
         song.setPost(post);
         return post;

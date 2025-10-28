@@ -6,6 +6,7 @@ import com.fifo.compasstep.guestComment.repository.GuestCommentRepository;
 import com.fifo.compasstep.post.domain.Post;
 import com.fifo.compasstep.post.dto.request.CreatePostRequest;
 import com.fifo.compasstep.post.dto.response.CreatePostResponse;
+import com.fifo.compasstep.post.dto.response.PostAnalysisResponse;
 import com.fifo.compasstep.post.dto.response.PostDetailResponse;
 import com.fifo.compasstep.post.dto.response.PostListItemDto;
 import com.fifo.compasstep.post.exceptions.PostErrorStatus;
@@ -84,9 +85,11 @@ public class PostService {
                 .toList();
 
         return PostDetailResponse.builder()
+                .postId(post.getId())
                 .songTitle(title)
                 .artistName(artistName)
                 .s3FileKey(s3Key)
+                .analyzed(post.isAnalyzed())
                 .comments(comments)
                 .build();
     }
@@ -107,6 +110,26 @@ public class PostService {
             // 존재하긴 하는데 내 소유가 아님
             throw new PostHandler(PostErrorStatus.FORBIDDEN_ACCESS);
         }
+    }
+
+    public PostAnalysisResponse getMyPostAnalysis(Long userId, Long postId) {
+        Post post = postRepository.findByIdAndSong_User_Id(postId, userId)
+                .orElseThrow(() -> new PostHandler(PostErrorStatus.FORBIDDEN_ACCESS));
+
+        String title = post.getSong().getTitle();
+        String artistName = post.getSong().getUser().getNickname() != null
+                ? post.getSong().getUser().getNickname()
+                : post.getSong().getUser().getName();
+
+        return PostAnalysisResponse.builder()
+                .postId(post.getId())
+                .songTitle(title)
+                .artistName(artistName)
+                .shareSummary(post.getShareSummary())
+                .shareDetails(post.getShareDetails())
+                .keywords(post.getKeywords())
+                .analyzedAt(toInstant(post.getUpdatedAt()))
+                .build();
     }
 
     private static Instant toInstant(LocalDateTime ldt) {

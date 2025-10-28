@@ -7,16 +7,16 @@ import lombok.Getter;
 import java.time.Instant;
 import java.util.List;
 
-@Getter
-@Builder
+@Getter @Builder
 public class PostDetailResponse {
+    private Long postId;
     private String songTitle;
     private String artistName;
     private String s3FileKey;
+    private boolean analyzed;
     private List<CommentItem> comments;
 
-    @Getter
-    @Builder
+    @Getter @Builder
     public static class CommentItem {
         private Long commentId;
         private String comment;
