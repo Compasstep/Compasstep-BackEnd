@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -54,6 +55,10 @@ public class SecurityConfig {
                                 "/api-docs/**",        // (하위 버전 호환용)
                                 "/swagger-resources/**" // 스웨거 리소스
                         ).permitAll()
+                        // 게스트 공개 (게시글 상세, 댓글 작성, CSRF 발급)
+                        .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/posts/*/comments").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/csrf-token").permitAll()
                         //
                         .requestMatchers("/api/admin/**").hasAnyRole("GENERAL", "ROOT")
                         .requestMatchers("/api/user/**").hasAnyAuthority("STATUS_NORMAL", "STATUS_SUSPENDED")

@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface SongRepository extends JpaRepository<Song, Integer> {
     //Song save(Song song);
 
+    boolean existsByIdAndUser_Id(Long songId, Long userId);
 }
