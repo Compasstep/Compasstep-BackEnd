@@ -25,7 +25,4 @@ public class AiModel extends BaseEntity {
 
     @Column(name = "f1_macro_score", nullable = false)
     private Float f1MacroScore;
-
-    @Column(nullable = false)
-    private Float accuracy;
 }   
