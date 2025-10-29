@@ -2,6 +2,8 @@ package com.fifo.compasstep.lyrics_analysis.domain;
 
 import com.fifo.compasstep.common.domain.BaseEntity;
 import com.fifo.compasstep.lyrics.domain.Lyrics;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,6 +21,7 @@ public class LyricsAnalysis extends BaseEntity {
     //lyricsPKId
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lyrics_id", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Lyrics lyrics;
 
     @Column(name = "analysis_result", nullable = false, columnDefinition = "jsonb")

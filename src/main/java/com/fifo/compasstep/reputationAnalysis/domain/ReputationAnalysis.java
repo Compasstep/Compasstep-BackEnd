@@ -2,6 +2,8 @@ package com.fifo.compasstep.reputationAnalysis.domain;
 
 import com.fifo.compasstep.common.domain.BaseEntity;
 import com.fifo.compasstep.user.domain.User;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,6 +21,7 @@ public class ReputationAnalysis extends BaseEntity {
     //userPKId
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column(name = "song_title", nullable = false)
@@ -32,10 +35,10 @@ public class ReputationAnalysis extends BaseEntity {
 
     @Column(name = "emotion_details", nullable = false, columnDefinition = "jsonb")
     private String emotionDetails;
+
     @Column(nullable = false, columnDefinition = "jsonb")
     private String keywords;
 
-    @Column(nullable = false, columnDefinition = "jsonb")
     public static ReputationAnalysis create(User user, String songTitle, String artistName, String sentimentSummary, String emotionDetails, String keywords) {
         ReputationAnalysis analysis = ReputationAnalysis.builder()
                 .user(user)
