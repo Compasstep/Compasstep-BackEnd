@@ -49,7 +49,7 @@ public class User extends BaseEntity {
     private boolean isDeleted = false; // Java에서는 camelCase와 primitive type 사용 - 자바에 맞게 변경
 
     @Builder.Default
-    private String s3FileImage = "/image/baseImageLocation";
+    private String s3FileImage = "image/baseImageLocation.png";
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @Builder.Default
