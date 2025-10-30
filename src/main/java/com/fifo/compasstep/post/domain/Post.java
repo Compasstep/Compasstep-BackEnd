@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fifo.compasstep.common.domain.BaseEntity;
 import com.fifo.compasstep.guestComment.domain.GuestComment;
 import com.fifo.compasstep.song.domain.Song;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -23,6 +25,7 @@ public class Post extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "song_id", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Song song;
 
     @Column(name = "share_summary", columnDefinition = "jsonb")

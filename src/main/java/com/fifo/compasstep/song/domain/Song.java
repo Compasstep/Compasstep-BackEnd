@@ -3,6 +3,8 @@ package com.fifo.compasstep.song.domain;
 import com.fifo.compasstep.common.domain.BaseEntity;
 import com.fifo.compasstep.post.domain.Post;
 import com.fifo.compasstep.user.domain.User;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -17,6 +19,7 @@ public class Song extends BaseEntity {
     //userPKId
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column(nullable = false)

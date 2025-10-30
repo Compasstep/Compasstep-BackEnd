@@ -3,6 +3,8 @@ package com.fifo.compasstep.lyrics.domain;
 import com.fifo.compasstep.common.domain.BaseEntity;
 import com.fifo.compasstep.lyrics_analysis.domain.LyricsAnalysis;
 import com.fifo.compasstep.user.domain.User;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -20,6 +22,7 @@ public class Lyrics extends BaseEntity {
     //userPKId
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column(nullable = false)

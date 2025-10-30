@@ -2,6 +2,8 @@ package com.fifo.compasstep.guestComment.domain;
 
 import com.fifo.compasstep.common.domain.BaseEntity;
 import com.fifo.compasstep.post.domain.Post;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,6 +21,7 @@ public class GuestComment extends BaseEntity {
     //postPKId
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Post post;
 
     @Column(nullable = false)
