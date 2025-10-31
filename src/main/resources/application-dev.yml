@@ -41,3 +41,24 @@ spring:
           auth: true
           starttls:
             enable: true
+
+# Prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name:app}
+    distribution:
+      # p95/p99 보려면 히스토그램/퍼센타일 활성화 권장
+      percentiles:
+        all: 0.5,0.9,0.95,0.99
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 100ms,300ms,500ms,1s,2s,5s
