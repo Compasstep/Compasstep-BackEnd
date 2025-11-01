@@ -11,8 +11,8 @@ public record ReputationDetailResponseDto(
         Long historyId,
         String songTitle,
         String artistName,
-        Map<String, Integer> sentimentSummary, // {"positive":85,"negative":10,"neutral":5}
-        Map<String, Integer> emotionDetails,   // {"joy":50,"sadness":5,...}
+        Map<String, Double> sentimentSummary, // {"positive":85,"negative":10,"neutral":5}
+        Map<String, Double> emotionDetails,   // {"joy":50,"sadness":5,...}
         List<String> keywords,                 // ["달달하다","목소리",...]
         Instant createdAt
 ) {}

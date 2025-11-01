@@ -50,8 +50,8 @@ public class ReputationAnalysisService {
         ReputationAnalysis entity = repo.findById(historyId)
                 .orElseThrow(() -> new ReputationAnalysisHandler(ReputationErrorStatus.HISTORY_NOT_FOUND));
 
-        Map<String, Integer> sentiment = parseObject(entity.getSentimentSummary());
-        Map<String, Integer> emotions  = parseObject(entity.getEmotionDetails());
+        Map<String, Double> sentiment = parseObject(entity.getSentimentSummary());
+        Map<String, Double> emotions  = parseObject(entity.getEmotionDetails());
         List<String> keywords          = parseArray(entity.getKeywords());
 
         return ReputationDetailResponseDto.builder()
@@ -77,7 +77,7 @@ public class ReputationAnalysisService {
     }
 
     /* ===== JSON 유틸 ===== */
-    private Map<String, Integer> parseObject(String json) {
+    private Map<String, Double> parseObject(String json) {
         try {
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (Exception e) {
