@@ -9,12 +9,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import com.fifo.compasstep.retrainingData.exceptions.RetrainingErrorStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.nio.file.AccessDeniedException;
 import java.security.GeneralSecurityException;
@@ -70,6 +74,35 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(errorCode.getReasonHttpStatus().getHttpStatus()) // HttpStatus.FORBIDDEN
                 .body(body);
     }
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+
+        String msg = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .findFirst()
+                .orElse("요청 파라미터가 올바르지 않습니다.");
+
+        var r = RetrainingErrorStatus.INVALID_LABELS.getReasonHttpStatus(); // 400
+        ApiResponse<Object> body = ApiResponse.onFailure(r.getCode(), msg, null);
+        return super.handleExceptionInternal(ex, body, headers, r.getHttpStatus(), request);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+
+        var r = RetrainingErrorStatus.INVALID_REQUEST.getReasonHttpStatus(); // 또는 JSON_PARSE_ERROR(400로 조정)
+        ApiResponse<Object> body = ApiResponse.onFailure(r.getCode(), "요청 본문(JSON) 형식이 올바르지 않습니다.", null);
+        return super.handleExceptionInternal(ex, body, headers, r.getHttpStatus(), request);
+    }
+
 
 //    /** 마지막 안전망 → 500 */
 //    @ExceptionHandler(Exception.class)

@@ -30,7 +30,7 @@ public class RetrainingDataController {
         return ApiResponse.success(service.getValid(page, size));
     }
 
-    @PatchMapping(value = "/invalid/convert/{dataPKId}", consumes = "application/json")
+    @PatchMapping("/invalid/convert/{dataPKId}")
     public ApiResponse<Void> convertInvalid(
             @PathVariable Long dataPKId,
             @Valid @RequestBody UpdateInvalidRequestDTO request) {
