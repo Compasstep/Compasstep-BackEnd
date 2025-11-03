@@ -25,7 +25,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RetrainingData extends BaseEntity {
 
-    @Column(name = "comment_text", nullable = false)
+    @Column(name = "comment_text", nullable = false, columnDefinition = "TEXT")
     private String commentText;
 
     @Column(
