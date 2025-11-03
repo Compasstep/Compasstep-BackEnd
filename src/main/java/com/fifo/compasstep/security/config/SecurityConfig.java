@@ -76,6 +76,9 @@ public class SecurityConfig {
                                 "/swagger-resources/**"
                         ).permitAll()
 
+                        // 프로메테우스 공개
+                        .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
+
                         // 게스트 공개 (예시)
                         .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/posts/*/comments").permitAll()

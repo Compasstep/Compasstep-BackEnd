@@ -61,4 +61,16 @@ public class ExternalApiConfig {
                 .defaultHeader("Content-Type", "application/json")
                 .build();
     }
+
+    // Prometheus 클라이언트 추가
+    @Bean("prometheusClient")
+    public WebClient prometheusClient() {
+        var cfg = props.getPrometheus();
+        return WebClient.builder()
+                .baseUrl(cfg.getBaseUrl())  // base-url 설정
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create().responseTimeout(Duration.ofMillis(cfg.getTimeoutMs()))
+                ))
+                .build();
+    }
 }
