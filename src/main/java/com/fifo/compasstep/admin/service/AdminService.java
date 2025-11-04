@@ -358,6 +358,17 @@ public class AdminService {
         user.changeStatus(Status.NORMAL);
     }
 
+    public AdminResponseDTO.dashboardResponseDTO getDashboard() {
+        Long totalUser = userRepository.countByStatusNot(Status.DELETED);
+        Long maliciousUser = userRepository.countByStatus(Status.SUSPENDED);
+        Long bannedUser = userRepository.countByStatus(Status.BLOCKED);
+        return AdminResponseDTO.dashboardResponseDTO.builder()
+                .totalUser(totalUser)
+                .maliciousUser(maliciousUser)
+                .bannedUser(bannedUser)
+                .build();
+    }
+
     private Map<String, String> makeTemPassword() {
         Map<String, String> tempPassword = new HashMap<>();
         String temp = UUID.randomUUID().toString().substring(0, 8);

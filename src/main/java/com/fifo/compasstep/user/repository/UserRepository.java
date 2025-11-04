@@ -20,6 +20,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByNickname(String nickname);
     List<User> findByStatusIn(List<Status> statuses);
 
+    Long countByStatusNot(Status status);
+    Long countByStatus(Status status);
+
     // 수정용 (벌크 업데이트)
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional

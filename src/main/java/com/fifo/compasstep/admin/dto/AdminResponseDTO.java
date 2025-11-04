@@ -66,4 +66,14 @@ public class AdminResponseDTO {
         private Boolean isGuardrailed;
     }
 
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class dashboardResponseDTO {
+        private Long totalUser;
+        private Long maliciousUser;
+        private Long bannedUser;
+    }
+
 }
