@@ -113,4 +113,10 @@ public class AdminController {
         adminService.unbanUser(userPKId);
         return ApiResponse.success(null);
     }
+
+    @GetMapping("/users/dashboard")
+    public ApiResponse<AdminResponseDTO.dashboardResponseDTO> dashboard() {
+        AdminResponseDTO.dashboardResponseDTO result = adminService.getDashboard();
+        return ApiResponse.success(result);
+    }
 }
