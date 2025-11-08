@@ -1,4 +1,4 @@
-/*package com.fifo.compasstep.rabbitmq.service;
+package com.fifo.compasstep.rabbitmq.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,4 +33,3 @@ public class TestController {
         return ResponseEntity.ok("AI retraining task has been queued with Job ID: " + jobId);
     }
 }
- */
