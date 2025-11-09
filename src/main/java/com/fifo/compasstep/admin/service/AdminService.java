@@ -290,6 +290,7 @@ public class AdminService {
         // 2. Admin 엔티티 리스트를 AdminInfoDTO 리스트로 변환 (Java Stream API 사용)
         List<AdminResponseDTO.AdminInfoDTO> adminInfoDTOs = adminEntities.stream()
                 .map(admin -> AdminResponseDTO.AdminInfoDTO.builder()
+                        .id(admin.getId())
                         .nickname(admin.getName()) // 엔티티의 name 필드를 nickname으로 매핑
                         .email(admin.getEmail())
                         .build())
