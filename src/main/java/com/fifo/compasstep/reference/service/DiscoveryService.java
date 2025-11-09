@@ -40,7 +40,7 @@ public class DiscoveryService {
                         items);
             }
             case "204" -> {
-                return new ApiResponse<>(200,
+                return new ApiResponse<>(204,
                         (message != null && !message.isBlank()) ? message : "추천 결과가 없습니다.",
                         List.of());
             }
