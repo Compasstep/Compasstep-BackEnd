@@ -48,7 +48,7 @@ public class KeywordDiscoveryClient {
         );
 
         return fastApiClient.post()
-                .uri("/ai/user/analyze/peer") // 새 API 엔드포인트
+                .uri("/ai/user/analyze/youtube") // 새 API 엔드포인트
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(payload)
                 // exchangeToMono 로직은 기존과 동일하게 사용
@@ -74,7 +74,7 @@ public class KeywordDiscoveryClient {
         // API 엔드포인트는 FastAPI와 협의된 경로를 사용해야 합니다.
         // 예: /ai/user/analyze/friend
         return fastApiClient.post()
-                .uri("/ai/user/analyze/friend") // Python FastAPI 엔드포인트
+                .uri("/ai/user/analyze/peer") // Python FastAPI 엔드포인트
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(payload)
                 .exchangeToMono(resp ->
