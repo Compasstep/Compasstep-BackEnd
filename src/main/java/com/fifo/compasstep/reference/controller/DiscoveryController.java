@@ -2,8 +2,14 @@
 package com.fifo.compasstep.reference.controller;
 
 import com.fifo.compasstep.apipayload.ApiResponse;
+import com.fifo.compasstep.reference.dto.LyricsAnalysis.LyricsAnalysisResultDTO;
+import com.fifo.compasstep.reference.dto.friend.FriendAnalysisResultDTO;
 import com.fifo.compasstep.reference.dto.request.DiscoveryKeywordRequestDto;
+import com.fifo.compasstep.reference.dto.request.FriendRequestDTO;
+import com.fifo.compasstep.reference.dto.request.LyricsAnalysisRequestDTO;
+import com.fifo.compasstep.reference.dto.request.YoutubeRequestDTO;
 import com.fifo.compasstep.reference.dto.response.TrackVideoDto;
+import com.fifo.compasstep.reference.dto.youtube.PeerAnalysisResultDTO;
 import com.fifo.compasstep.reference.service.DiscoveryService;
 import com.fifo.compasstep.security.userDetails.UserUserDetails;
 import jakarta.validation.Valid;
@@ -30,5 +36,28 @@ public class DiscoveryController {
     ) {
         Long userId = currentUser.getUser().getId();
         return service.discover(userId, req.query());
+    }
+
+    @PostMapping("/analyze/youtube")
+    public ApiResponse<PeerAnalysisResultDTO> youtubeAnalyze(
+            @AuthenticationPrincipal UserUserDetails currentUser,
+            @Valid @RequestBody YoutubeRequestDTO youtubeRequest
+            ) {
+        Long userId = currentUser.getUser().getId();
+        return service.analyzeYoutube(youtubeRequest.getSongTitle(), youtubeRequest.getArtistName(), userId);
+    }
+
+    @PostMapping("/analyze/friend")
+    public ApiResponse<FriendAnalysisResultDTO> friendAnalysis(
+            @RequestBody FriendRequestDTO friend
+    ) {
+        return service.analyzeFriend(friend.getPostId());
+    }
+
+    @PostMapping("/analyze/lyrics")
+    public ApiResponse<LyricsAnalysisResultDTO> analysisCoaching(
+            @RequestBody LyricsAnalysisRequestDTO analysis
+    ) {
+        return service.analyzeLyrics(analysis.getLyricsId());
     }
 }

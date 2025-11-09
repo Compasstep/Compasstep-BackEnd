@@ -115,7 +115,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             } catch (UsernameNotFoundException e) {
                 //유저 못찾을 경우 커스텀 응답
-                handleException(response, AdminErrorStatus.ADMIN_NOT_FOUND);
+                handleException(response, AdminErrorStatus.ERROR_FOUR);
                 return;
             } catch (Exception e) {
                 // 기타 JWT 관련 오류 (기존 코드와 동일)

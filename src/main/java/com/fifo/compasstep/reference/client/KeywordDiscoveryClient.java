@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +34,87 @@ public class KeywordDiscoveryClient {
                                 .defaultIfEmpty(new HashMap<>())
                                 .map(body -> {
                                     // FastAPI가 code를 넣어주지만, 혹시 없으면 HTTP status로 채움
+                                    body.putIfAbsent("code", String.valueOf(resp.statusCode().value()));
+                                    body.putIfAbsent("message", "");
+                                    body.putIfAbsent("result", null);
+                                    return body;
+                                })
+                )
+                .block();
+    }
+    public Map<String, Object> analyzePeerReputation(String songTitle, String artistName, Long userId) { // 예시 파라미터
+        Map<String, Object> payload = Map.of(
+                "songTitle", songTitle,
+                "artist", artistName,
+                "userId", userId// FastAPI가 받을 파라미터
+        );
+
+        return fastApiClient.post()
+                .uri("/ai/user/analyze/youtube") // 새 API 엔드포인트
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(payload)
+                // exchangeToMono 로직은 기존과 동일하게 사용
+                .exchangeToMono(resp ->
+                        resp.bodyToMono(Map.class)
+                                .defaultIfEmpty(new HashMap<>())
+                                .map(body -> {
+                                    body.putIfAbsent("code", String.valueOf(resp.statusCode().value()));
+                                    body.putIfAbsent("message", "");
+                                    body.putIfAbsent("result", null);
+                                    return body;
+                                })
+                )
+                .block();
+    }
+
+
+    public Map<String, Object> analyzeFriendReputation(Long postId) {
+        Map<String, Object> payload = Map.of("postId", postId); // camelCase
+
+        return fastApiClient.post()
+                .uri("/ai/user/analyze/peer")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(payload)
+                .exchangeToMono(resp ->
+                        resp.bodyToMono(String.class)  // 🔥 Map이 아니라 String으로 받기
+                                .map(raw -> {
+                                    try {
+                                        return new ObjectMapper().readValue(raw, Map.class);
+                                    } catch (Exception e) {
+                                        Map<String, Object> error = new HashMap<>();
+                                        error.put("code", resp.statusCode().value());
+                                        error.put("message", "응답 JSON 변환 실패");
+                                        error.put("raw", raw);
+                                        return error;
+                                    }
+                                })
+                )
+                .block();
+
+    }
+
+    // KeywordDiscoveryClient.java 클래스 내에 추가
+
+    /**
+     * lyrics_id를 FastAPI로 전송하고 가사 분석 및 코칭 결과를 받습니다.
+     * @param lyricsId 프론트엔드에서 받은 가사 ID
+     * @return FastAPI로부터 받은 응답 Map
+     */
+    public Map<String, Object> analyzeLyrics(Long lyricsId) {
+        // Python으로 전달할 페이로드. Python이 'lyrics_id'를 받을 것으로 예상
+        Map<String, Object> payload = Map.of(
+                "lyrics_id", lyricsId
+        );
+
+        // Python FastAPI 엔드포인트
+        return fastApiClient.post()
+                .uri("/ai/user/analyze/lyrics")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(payload)
+                .exchangeToMono(resp ->
+                        resp.bodyToMono(Map.class)
+                                .defaultIfEmpty(new HashMap<>())
+                                .map(body -> {
                                     body.putIfAbsent("code", String.valueOf(resp.statusCode().value()));
                                     body.putIfAbsent("message", "");
                                     body.putIfAbsent("result", null);
