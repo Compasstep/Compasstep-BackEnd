@@ -6,7 +6,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # update나 create 선택 가능
+      ddl-auto: none # update나 create 선택 가능
     show-sql: true
     properties:
       hibernate:
