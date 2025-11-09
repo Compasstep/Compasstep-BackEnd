@@ -5,6 +5,7 @@ import com.fifo.compasstep.apipayload.ApiResponse;
 import com.fifo.compasstep.reference.dto.LyricsAnalysis.LyricsAnalysisResultDTO;
 import com.fifo.compasstep.reference.dto.friend.FriendAnalysisResultDTO;
 import com.fifo.compasstep.reference.dto.request.DiscoveryKeywordRequestDto;
+import com.fifo.compasstep.reference.dto.request.FriendRequestDTO;
 import com.fifo.compasstep.reference.dto.request.LyricsAnalysisRequestDTO;
 import com.fifo.compasstep.reference.dto.request.YoutubeRequestDTO;
 import com.fifo.compasstep.reference.dto.response.TrackVideoDto;
@@ -43,12 +44,12 @@ public class DiscoveryController {
             @Valid @RequestBody YoutubeRequestDTO youtubeRequest
             ) {
         Long userId = currentUser.getUser().getId();
-        return service.analyzeYoutube(youtubeRequest.getSongId(), youtubeRequest.getArtistName(), userId);
+        return service.analyzeYoutube(youtubeRequest.getSongTitle(), youtubeRequest.getArtistName(), userId);
     }
 
     @PostMapping("/analyze/friend")
     public ApiResponse<FriendAnalysisResultDTO> friendAnalysis(
-            @RequestBody FriendAnalysisResultDTO friend
+            @RequestBody FriendRequestDTO friend
     ) {
         return service.analyzeFriend(friend.getPostId());
     }

@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class YoutubeRequestDTO {
-    private Long songId;
+    private String songTitle;
     private String artistName;
 }

@@ -56,12 +56,12 @@ public class DiscoveryService {
             default -> throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_ERROR);
         }
     }
-    public ApiResponse<PeerAnalysisResultDTO> analyzeYoutube(Long songId, String artistName, Long userId) {
+    public ApiResponse<PeerAnalysisResultDTO> analyzeYoutube(String songTitle, String artistName, Long userId) {
         Map<String, Object> res;
 
         try {
             //새 클라이언트 메소드 호출
-            res = client.analyzePeerReputation(songId, artistName, userId);
+            res = client.analyzePeerReputation(songTitle, artistName, userId);
         } catch (Exception e) {
             throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_ERROR);
         }

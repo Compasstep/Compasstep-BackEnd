@@ -27,7 +27,8 @@ public enum AdminErrorStatus implements BaseErrorCode {
     CANNOT_DELETE_SELF(HttpStatus.FORBIDDEN, 401, "자기 자신을 탈퇴할 수 없습니다."),
     PASSWORD_NOT_MATCH(HttpStatus.FORBIDDEN, 401, "두 비밀번호가 일치하지 않습니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.FORBIDDEN, 403, "이메일이 중복되었습니다."),
-    NOT_SUPPORTED_USERTYPE(HttpStatus.NOT_FOUND, 401, "지원하지 않는 유저타입입니다.")
+    NOT_SUPPORTED_USERTYPE(HttpStatus.NOT_FOUND, 401, "지원하지 않는 유저타입입니다."),
+    ERROR_FOUR(HttpStatus.NOT_FOUND, 403, "403오류")
 
             ;
 
