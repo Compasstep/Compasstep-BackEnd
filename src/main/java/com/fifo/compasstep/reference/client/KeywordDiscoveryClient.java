@@ -43,7 +43,7 @@ public class KeywordDiscoveryClient {
     public Map<String, Object> analyzePeerReputation(String songTitle, String artistName, Long userId) { // 예시 파라미터
         Map<String, Object> payload = Map.of(
                 "song_title", songTitle,
-                "artist_name", artistName,
+                "artist", artistName,
                 "user_id", userId// FastAPI가 받을 파라미터
         );
 
