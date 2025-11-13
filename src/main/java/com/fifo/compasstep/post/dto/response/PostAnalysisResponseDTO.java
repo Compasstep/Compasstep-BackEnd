@@ -8,7 +8,7 @@ import java.time.Instant;
 
 @Getter
 @Builder
-public class PostAnalysisResponse {
+public class PostAnalysisResponseDTO {
     private Long postId;
     private String songTitle;
     private String artistName;

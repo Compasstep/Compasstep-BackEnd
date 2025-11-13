@@ -3,7 +3,7 @@ package com.fifo.compasstep.guestComment.service;
 
 import com.fifo.compasstep.apipayload.exceptions.handler.GuestCommentHandler;
 import com.fifo.compasstep.guestComment.domain.GuestComment;
-import com.fifo.compasstep.guestComment.dto.request.CreateGuestCommentRequest;
+import com.fifo.compasstep.guestComment.dto.request.CreateGuestCommentRequestDTO;
 import com.fifo.compasstep.guestComment.exceptions.GuestCommentErrorStatus;
 import com.fifo.compasstep.guestComment.repository.GuestCommentRepository;
 import com.fifo.compasstep.post.domain.Post;
@@ -22,7 +22,7 @@ public class GuestCommentService {
 
     /** 댓글 작성 (게스트) */
     @Transactional
-    public void createComment(Long postId, CreateGuestCommentRequest req) {
+    public void createComment(Long postId, CreateGuestCommentRequestDTO req) {
         if (req.getComment() == null || req.getComment().isBlank()) {
             throw new GuestCommentHandler(GuestCommentErrorStatus.COMMENT_REQUIRED);
         }

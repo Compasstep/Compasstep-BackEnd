@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class PostListItemDto {
+public class PostListItemDTO {
     private Long postId;
     private String songTitle;
 }

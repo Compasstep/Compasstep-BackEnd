@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 @Builder
-public record ReputationDetailResponseDto(
+public record ReputationDetailResponseDTO(
         Long historyId,
         String songTitle,
         String artistName,

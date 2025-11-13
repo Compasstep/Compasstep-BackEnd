@@ -11,10 +11,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApiCountSummaryDto {
+public class ApiCountSummaryDTO {
 
     // 개별 API별 호출 수
-    private List<ApiCountDto> apiCounts;
+    private List<ApiCountDTO> apiCounts;
 
     // 전체 합산 호출 수
     private long totalCount;

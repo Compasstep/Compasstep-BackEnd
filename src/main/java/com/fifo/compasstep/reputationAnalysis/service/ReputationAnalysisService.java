@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fifo.compasstep.apipayload.exceptions.handler.ReputationAnalysisHandler;
 import com.fifo.compasstep.reputationAnalysis.domain.ReputationAnalysis;
 import com.fifo.compasstep.reputationAnalysis.domain.ReputationAnalysisRepository;
-import com.fifo.compasstep.reputationAnalysis.dto.response.ReputationDetailResponseDto;
-import com.fifo.compasstep.reputationAnalysis.dto.response.ReputationListItemDto;
+import com.fifo.compasstep.reputationAnalysis.dto.response.ReputationDetailResponseDTO;
+import com.fifo.compasstep.reputationAnalysis.dto.response.ReputationListItemDTO;
 import com.fifo.compasstep.reputationAnalysis.exceptions.ReputationErrorStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,10 +28,10 @@ public class ReputationAnalysisService {
     private final ObjectMapper objectMapper;
 
     /** 대중 평판 목록 조회 */
-    public List<ReputationListItemDto> getList(Long userId) {
+    public List<ReputationListItemDTO> getList(Long userId) {
         List<ReputationAnalysis> rows = repo.findByUserIdOrderByCreatedAtDesc(userId);
         return rows.stream()
-                .map(e -> ReputationListItemDto.builder()
+                .map(e -> ReputationListItemDTO.builder()
                         .historyId(e.getId())
                         .songTitle(e.getSongTitle())
                         .artistName(e.getArtistName())
@@ -41,7 +41,7 @@ public class ReputationAnalysisService {
     }
 
     /** 대중 평판 상세 조회 */
-    public ReputationDetailResponseDto getDetail(Long historyId, Long userId) {
+    public ReputationDetailResponseDTO getDetail(Long historyId, Long userId) {
         // 소유자 확인
         if (!repo.existsByIdAndUserId(historyId, userId)) {
             throw new ReputationAnalysisHandler(ReputationErrorStatus.FORBIDDEN_ACCESS);
@@ -54,7 +54,7 @@ public class ReputationAnalysisService {
         Map<String, Double> emotions  = parseObject(entity.getEmotionDetails());
         List<String> keywords          = parseArray(entity.getKeywords());
 
-        return ReputationDetailResponseDto.builder()
+        return ReputationDetailResponseDTO.builder()
                 .historyId(entity.getId())
                 .songTitle(entity.getSongTitle())
                 .artistName(entity.getArtistName())

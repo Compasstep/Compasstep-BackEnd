@@ -4,11 +4,11 @@ package com.fifo.compasstep.reference.controller;
 import com.fifo.compasstep.apipayload.ApiResponse;
 import com.fifo.compasstep.reference.dto.LyricsAnalysis.LyricsAnalysisResultDTO;
 import com.fifo.compasstep.reference.dto.friend.FriendAnalysisResultDTO;
-import com.fifo.compasstep.reference.dto.request.DiscoveryKeywordRequestDto;
+import com.fifo.compasstep.reference.dto.request.DiscoveryKeywordRequestDTO;
 import com.fifo.compasstep.reference.dto.request.FriendRequestDTO;
 import com.fifo.compasstep.reference.dto.request.LyricsAnalysisRequestDTO;
 import com.fifo.compasstep.reference.dto.request.YoutubeRequestDTO;
-import com.fifo.compasstep.reference.dto.response.TrackVideoDto;
+import com.fifo.compasstep.reference.dto.response.TrackVideoDTO;
 import com.fifo.compasstep.reference.dto.youtube.PeerAnalysisResultDTO;
 import com.fifo.compasstep.reference.service.DiscoveryService;
 import com.fifo.compasstep.security.userDetails.UserUserDetails;
@@ -30,8 +30,8 @@ public class DiscoveryController {
     /** 키워드 기반 레퍼런스 탐색 (FastAPI 프록시) */
     @PostMapping("/discovery/keyword")
     @PreAuthorize("hasAuthority('STATUS_NORMAL')")
-    public ApiResponse<List<TrackVideoDto>> discoveryKeyword(
-            @Valid @RequestBody DiscoveryKeywordRequestDto req,
+    public ApiResponse<List<TrackVideoDTO>> discoveryKeyword(
+            @Valid @RequestBody DiscoveryKeywordRequestDTO req,
             @AuthenticationPrincipal UserUserDetails currentUser
     ) {
         Long userId = currentUser.getUser().getId();

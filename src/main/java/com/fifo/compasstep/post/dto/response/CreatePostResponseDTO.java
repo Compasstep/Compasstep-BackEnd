@@ -6,6 +6,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CreatePostResponse {
+public class CreatePostResponseDTO {
     private Long postId;
 }
