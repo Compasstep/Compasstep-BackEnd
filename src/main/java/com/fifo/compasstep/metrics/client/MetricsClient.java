@@ -2,9 +2,11 @@ package com.fifo.compasstep.metrics.client;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;   // ✅ 추가
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Instant;                                   // ✅ 추가
 import java.util.Map;
 
 @Component
@@ -23,6 +25,19 @@ public class MetricsClient {
                         .build())
                 .retrieve()
                 .bodyToMono(Map.class)  // Map으로 응답을 받도록 수정
+                .block();
+    }
+
+    // 특정 시점(time) 기준 조회
+    public Map<String, Object> queryMetrics(String query, Instant time) {
+        return prometheusClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/v1/query")
+                        .queryParam("query", query)
+                        .queryParam("time", time.getEpochSecond())
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                 .block();
     }
 }

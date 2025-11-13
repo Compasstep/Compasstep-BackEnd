@@ -9,7 +9,7 @@ import com.fifo.compasstep.reference.client.KeywordDiscoveryClient;
 import com.fifo.compasstep.reference.dto.LyricsAnalysis.LyricsAnalysisResultDTO;
 import com.fifo.compasstep.reference.dto.friend.FriendAnalysisResultDTO;
 import com.fifo.compasstep.reference.dto.youtube.PeerAnalysisResultDTO;
-import com.fifo.compasstep.reference.dto.response.TrackVideoDto;
+import com.fifo.compasstep.reference.dto.response.TrackVideoDTO;
 import com.fifo.compasstep.reference.exceptions.DiscoveryErrorStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class DiscoveryService {
 
     /** FastAPI로 전달 후 우리 ApiResponse로 변환 */
     @SuppressWarnings("unchecked")
-    public ApiResponse<List<TrackVideoDto>> discover(Long userId, String query) {
+    public ApiResponse<List<TrackVideoDTO>> discover(Long userId, String query) {
         Map<String, Object> res;
         try {
             res = client.discoveryByKeyword(userId, query);
@@ -39,7 +39,7 @@ public class DiscoveryService {
 
         switch (code) {
             case "200" -> {
-                List<TrackVideoDto> items = toTrackVideoList(resultObj);
+                List<TrackVideoDTO> items = toTrackVideoList(resultObj);
                 return new ApiResponse<>(200,
                         (message != null && !message.isBlank()) ? message : "성공",
                         items);
@@ -194,12 +194,12 @@ public class DiscoveryService {
 
 
     @SuppressWarnings("unchecked")
-    private List<TrackVideoDto> toTrackVideoList(Object resultObj) {
+    private List<TrackVideoDTO> toTrackVideoList(Object resultObj) {
         if (!(resultObj instanceof List<?> raw)) return List.of();
-        List<TrackVideoDto> out = new ArrayList<>();
+        List<TrackVideoDTO> out = new ArrayList<>();
         for (Object o : raw) {
             if (o instanceof Map<?,?> m) {
-                out.add(TrackVideoDto.builder()
+                out.add(TrackVideoDTO.builder()
                         .videoId(Objects.toString(m.get("videoId"), ""))
                         .title(Objects.toString(m.get("title"), ""))
                         .channelName(Objects.toString(m.get("channelName"), ""))
@@ -207,7 +207,7 @@ public class DiscoveryService {
                         .youtubeUrl(Objects.toString(m.get("youtubeUrl"), ""))
                         .build());
             } else if (o instanceof String s) {
-                out.add(TrackVideoDto.builder()
+                out.add(TrackVideoDTO.builder()
                         .videoId("").title(s).channelName("")
                         .thumbnailUrl("").youtubeUrl("").build());
             }

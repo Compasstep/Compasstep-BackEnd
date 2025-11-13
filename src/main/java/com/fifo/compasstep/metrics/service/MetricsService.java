@@ -1,18 +1,17 @@
 package com.fifo.compasstep.metrics.service;
 
 import com.fifo.compasstep.metrics.client.MetricsClient;
-import com.fifo.compasstep.metrics.dto.ApiCountDto;
+import com.fifo.compasstep.metrics.constants.ExcludedUrls;
+import com.fifo.compasstep.metrics.dto.ApiCountDTO;
+import com.fifo.compasstep.metrics.dto.ApiCountSummaryDTO;
 import com.fifo.compasstep.metrics.dto.ApiLatencyDto;
-import com.fifo.compasstep.metrics.utils.MetricsUtils;  // 유틸리티 클래스 임포트
-import com.fifo.compasstep.metrics.constants.ExcludedUrls;  // 상수 클래스 임포트
+import com.fifo.compasstep.metrics.utils.MetricsUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.time.*;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -21,14 +20,14 @@ public class MetricsService {
 
     private final MetricsClient metricsClient;
     // API 호출 횟수 가져오기 (내림차순)
-    public List<ApiCountDto> getApiCount() {
+    public List<ApiCountDTO> getApiCount() {
         // 1시간 동안의 요청 횟수 증가를 계산
         String query = "sum by (uri, method) (increase(http_server_requests_seconds_count[1h]))";
         Map<String, Object> result = metricsClient.queryMetrics(query);  // Map으로 받음
 
         log.info("API Count Result: {}", result);  // 쿼리 결과 로그 출력
 
-        List<ApiCountDto> apiCount = new ArrayList<>();
+        List<ApiCountDTO> apiCount = new ArrayList<>();
 
         Map<String, Object> data = (Map<String, Object>) result.get("data");
         if (data != null) {
@@ -54,18 +53,116 @@ public class MetricsService {
                 if (parsedValue != null) {
                     // 소수점 제거: 호출 횟수를 정수로 변환
                     int countValue = parsedValue.intValue();  // 소수점 이하 버리기
-                    apiCount.add(new ApiCountDto(apiPath, (double) countValue));  // 정수로 처리
+                    apiCount.add(new ApiCountDTO(apiPath, (double) countValue));  // 정수로 처리
                 }
             }
         }
 
         // 내림차순 정렬 유지 (숫자 내림차순)
-        apiCount.sort(Comparator.comparing(ApiCountDto::getCount).reversed());
+        apiCount.sort(Comparator.comparing(ApiCountDTO::getCount).reversed());
 
         return apiCount;
     }
+    public ApiCountSummaryDTO getTodayApiCountSummary() {
+        ZoneId zone = ZoneId.of("Asia/Seoul");
 
-    // API 지연 시간 가져오기 (오름차순)  -90일간
+        // 오늘 00시
+        ZonedDateTime now = ZonedDateTime.now(zone);
+        ZonedDateTime midnight = now.toLocalDate().atStartOfDay(zone);
+
+        // 오늘 00시부터 지금까지 경과 시간 (초)
+        long seconds = Duration.between(midnight, now).getSeconds();
+        if (seconds <= 0) {
+            return new ApiCountSummaryDTO(Collections.emptyList(), 0L);
+        }
+
+        String promDuration = seconds + "s"; // ex) "57600s" (16시간)
+
+        String query = String.format(
+                "sum by (uri, method) (increase(http_server_requests_seconds_count[%s]))",
+                promDuration
+        );
+
+        log.info("[Today] API Count Query = {}", query);
+        Map<String, Object> result = metricsClient.queryMetrics(query);
+
+        return parseApiCountSummary(query, result);
+    }
+
+    // 특정 일자 기준 (해당 날짜 00:00 ~ 24:00)
+    public ApiCountSummaryDTO getApiCountSummaryByDate(LocalDate date) {
+        ZoneId zone = ZoneId.of("Asia/Seoul");
+
+        // date 하루치 = date 00:00 ~ date+1 00:00
+        ZonedDateTime endOfDayLocal = date.plusDays(1).atStartOfDay(zone);
+        Instant endOfDayUtc = endOfDayLocal.toInstant();
+
+        String query = "sum by (uri, method) (increase(http_server_requests_seconds_count[1d]))";
+
+        log.info("[ByDate] date = {}, API Count Query = {}, time = {}",
+                date, query, endOfDayUtc.getEpochSecond());
+
+        Map<String, Object> result = metricsClient.queryMetrics(query, endOfDayUtc);
+
+        return parseApiCountSummary(query, result);
+    }
+
+    // 공통 파싱 로직:
+    //  - 개별 ApiCountDto 리스트
+    //  - totalCount (전부 합)
+    @SuppressWarnings("unchecked")
+    private ApiCountSummaryDTO parseApiCountSummary(String query, Map<String, Object> result) {
+        List<ApiCountDTO> apiCounts = new ArrayList<>();
+        long totalCount = 0L;
+
+        if (result == null) {
+            log.warn("Result is null for query: {}", query);
+            return new ApiCountSummaryDTO(apiCounts, totalCount);
+        }
+
+        Map<String, Object> data = (Map<String, Object>) result.get("data");
+        if (data == null) {
+            log.warn("No 'data' field in result for query: {}", query);
+            return new ApiCountSummaryDTO(apiCounts, totalCount);
+        }
+
+        List<Map<String, Object>> resultList =
+                (List<Map<String, Object>>) data.get("result");
+
+        if (resultList == null || resultList.isEmpty()) {
+            log.warn("No 'result' list for query: {}", query);
+            return new ApiCountSummaryDTO(apiCounts, totalCount);
+        }
+
+        for (Map<String, Object> entry : resultList) {
+            String apiPath = MetricsUtils.extractMetricToString(entry);
+
+            // 특정 URL 제외
+            if (MetricsUtils.shouldExcludeUrl(apiPath, ExcludedUrls.EXCLUDED_URLS)) {
+                continue;
+            }
+
+            List<Object> value = (List<Object>) entry.get("value");
+            Double parsedValue = MetricsUtils.extractValue(value);
+
+            if (parsedValue != null) {
+                int countValue = parsedValue.intValue(); // 소수점 버리고 정수로
+                apiCounts.add(new ApiCountDTO(apiPath, (double) countValue));
+
+                // 총합 계산
+                totalCount += countValue;
+            }
+        }
+
+        // 개별 API는 내림차순 정렬
+        apiCounts.sort(Comparator.comparing(ApiCountDTO::getCount).reversed());
+
+        log.info("Parsed {} APIs, totalCount = {}", apiCounts.size(), totalCount);
+
+        return new ApiCountSummaryDTO(apiCounts, totalCount);
+    }
+
+    // API 지연 시간 가져오기 (오름차순)  - 1시간
     public List<ApiLatencyDto> getApiLatency() {
         // 둘을 나눠서 지연시간 계산
         String sumQuery = "sum by (uri, method) (increase(http_server_requests_seconds_sum[1h]))"; // 1시간 동안 API 요청에 소요된 총 시간

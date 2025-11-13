@@ -2,7 +2,7 @@
 package com.fifo.compasstep.guestComment.controller;
 
 import com.fifo.compasstep.apipayload.ApiResponse;
-import com.fifo.compasstep.guestComment.dto.request.CreateGuestCommentRequest;
+import com.fifo.compasstep.guestComment.dto.request.CreateGuestCommentRequestDTO;
 import com.fifo.compasstep.guestComment.service.GuestCommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class GuestCommentController {
     @PostMapping("/posts/{postId}/comments")
     public ApiResponse<Void> createComment(
             @PathVariable Long postId,
-            @Valid @RequestBody CreateGuestCommentRequest request
+            @Valid @RequestBody CreateGuestCommentRequestDTO request
     ) {
         guestCommentService.createComment(postId, request);
         return ApiResponse.success(null);

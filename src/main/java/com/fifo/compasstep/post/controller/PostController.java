@@ -2,10 +2,10 @@
 package com.fifo.compasstep.post.controller;
 
 import com.fifo.compasstep.apipayload.ApiResponse;
-import com.fifo.compasstep.post.dto.request.CreatePostRequest;
-import com.fifo.compasstep.post.dto.response.CreatePostResponse;
-import com.fifo.compasstep.post.dto.response.PostAnalysisResponse;
-import com.fifo.compasstep.post.dto.response.PostListItemDto;
+import com.fifo.compasstep.post.dto.request.CreatePostRequestDTO;
+import com.fifo.compasstep.post.dto.response.CreatePostResponseDTO;
+import com.fifo.compasstep.post.dto.response.PostAnalysisResponseDTO;
+import com.fifo.compasstep.post.dto.response.PostListItemDTO;
 import com.fifo.compasstep.post.service.PostService;
 import com.fifo.compasstep.security.userDetails.UserUserDetails;
 import jakarta.validation.Valid;
@@ -24,9 +24,9 @@ public class PostController {
 
     /** 게시글 생성 */
     @PostMapping("/posts")
-    public ApiResponse<CreatePostResponse> createPost(
+    public ApiResponse<CreatePostResponseDTO> createPost(
             @AuthenticationPrincipal UserUserDetails currentUser,
-            @Valid @RequestBody CreatePostRequest request
+            @Valid @RequestBody CreatePostRequestDTO request
     ) {
         Long userId = currentUser.getUser().getId();
         var result = postService.createPost(userId, request);
@@ -35,7 +35,7 @@ public class PostController {
 
     /** 게시글 목록 조회 (마이페이지) */
     @GetMapping("/posts/me")
-    public ApiResponse<List<PostListItemDto>> getMyPosts(
+    public ApiResponse<List<PostListItemDTO>> getMyPosts(
             @AuthenticationPrincipal UserUserDetails currentUser
     ) {
         Long userId = currentUser.getUser().getId();
@@ -45,7 +45,7 @@ public class PostController {
 
     /** 게시글 분석 조회 */
     @GetMapping("/posts/{postId}/analysis")
-    public ApiResponse<PostAnalysisResponse> getMyPostAnalysis(
+    public ApiResponse<PostAnalysisResponseDTO> getMyPostAnalysis(
             @AuthenticationPrincipal UserUserDetails currentUser,
             @PathVariable Long postId
     ) {

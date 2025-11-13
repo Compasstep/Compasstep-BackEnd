@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class CreateGuestCommentRequest {
+public class CreateGuestCommentRequestDTO {
     @NotBlank
     private String comment;
     private Integer rate; // null이면 0 처리

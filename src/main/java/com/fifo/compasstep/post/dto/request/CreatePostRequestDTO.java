@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class CreatePostRequest {
+public class CreatePostRequestDTO {
     @NotNull
     private Long songId;
 }

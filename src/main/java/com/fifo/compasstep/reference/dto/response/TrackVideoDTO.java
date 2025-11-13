@@ -3,7 +3,7 @@ package com.fifo.compasstep.reference.dto.response;
 import lombok.Builder;
 
 @Builder
-public record TrackVideoDto(
+public record TrackVideoDTO(
         String videoId,
         String title,
         String channelName,

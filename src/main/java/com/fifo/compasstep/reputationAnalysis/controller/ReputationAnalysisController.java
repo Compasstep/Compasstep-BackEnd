@@ -1,8 +1,8 @@
 package com.fifo.compasstep.reputationAnalysis.controller;
 
 import com.fifo.compasstep.apipayload.ApiResponse;
-import com.fifo.compasstep.reputationAnalysis.dto.response.ReputationDetailResponseDto;
-import com.fifo.compasstep.reputationAnalysis.dto.response.ReputationListItemDto;
+import com.fifo.compasstep.reputationAnalysis.dto.response.ReputationDetailResponseDTO;
+import com.fifo.compasstep.reputationAnalysis.dto.response.ReputationListItemDTO;
 import com.fifo.compasstep.reputationAnalysis.service.ReputationAnalysisService;
 import com.fifo.compasstep.security.userDetails.UserUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class ReputationAnalysisController {
 
     /** 저장된 평판 분석 목록 조회 */
     @GetMapping("/reputation-history")
-    public ApiResponse<List<ReputationListItemDto>> getHistoryList(
+    public ApiResponse<List<ReputationListItemDTO>> getHistoryList(
             @AuthenticationPrincipal UserUserDetails currentUser
     ) {
         Long userId = currentUser.getUser().getId();
@@ -30,7 +30,7 @@ public class ReputationAnalysisController {
 
     /** 평판 분석 상세 조회 */
     @GetMapping("/reputation-history/{historyId}")
-    public ApiResponse<ReputationDetailResponseDto> getHistoryDetail(
+    public ApiResponse<ReputationDetailResponseDTO> getHistoryDetail(
             @PathVariable Long historyId,
             @AuthenticationPrincipal UserUserDetails currentUser
     ) {

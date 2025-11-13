@@ -4,13 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class ApiCountDto {
+public class ApiCountDTO {
     // getters and setters
     @Setter
     private String apiPath;
     private Double count;
 
-    public ApiCountDto(String apiPath, Double count) {
+    public ApiCountDTO(String apiPath, Double count) {
         this.apiPath = apiPath;
         this.count = count;
     }
