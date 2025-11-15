@@ -13,6 +13,7 @@ public class PostDetailResponseDTO {
     private String songTitle;
     private String artistName;
     private String s3FileKey;
+    private String artistProfileImage;
     private boolean analyzed;
     private List<CommentItem> comments;
 
