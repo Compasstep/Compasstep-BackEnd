@@ -75,6 +75,8 @@ public class PostService {
                 ? post.getSong().getUser().getNickname()
                 : post.getSong().getUser().getName();
 
+        String artistProfileImage = post.getSong().getUser().getS3FileImage();
+
         var comments = guestCommentRepository.findByPost_IdOrderByCreatedAtAsc(postId).stream()
                 .map(gc -> PostDetailResponseDTO.CommentItem.builder()
                         .commentId(gc.getId())
@@ -89,6 +91,7 @@ public class PostService {
                 .songTitle(title)
                 .artistName(artistName)
                 .s3FileKey(s3Key)
+                .artistProfileImage(artistProfileImage)
                 .analyzed(post.isAnalyzed())
                 .comments(comments)
                 .build();
