@@ -4,11 +4,9 @@ import com.fifo.compasstep.apipayload.exceptions.handler.UserHandler;
 import com.fifo.compasstep.security.jwt.JwtProperties;
 import com.fifo.compasstep.security.jwt.JwtTokenProvider;
 import com.fifo.compasstep.security.service.RefreshTokenService;
-
 import com.fifo.compasstep.security.userDetails.UserUserDetails;
 import com.fifo.compasstep.security.util.CookieUtil;
 import com.fifo.compasstep.user.domain.User;
-
 import com.fifo.compasstep.user.dto.GoogleUserInfo;
 import com.fifo.compasstep.user.dto.UserRequestDTO;
 import com.fifo.compasstep.user.dto.UserResponseDTO;
@@ -25,13 +23,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
     private final UserRepository userRepository;
     private final JwtProperties jwtProperties;
     private final RefreshTokenService refreshTokenService;
@@ -40,44 +38,50 @@ public class UserService {
     private final GoogleTokenVerifier googleTokenVerifier;
     private final S3Service s3Service;
 
+    /* ============================================================
+       🔥 로그인 – JWT + CSRF 쿠키 생성
+    ============================================================ */
     @Transactional
-    public UserResponseDTO.LoginResponseDTO login(UserRequestDTO.LoginRequestDTO request, HttpServletResponse response) {
-        // 1. 구글 토큰 검증 및 사용자 정보 가져오기
+    public UserResponseDTO.LoginResponseDTO login(
+            UserRequestDTO.LoginRequestDTO request,
+            HttpServletResponse response) {
+
         String googleToken = request.getGoogleToken().replace("Bearer ", "");
         GoogleUserInfo googleUserInfo = googleTokenVerifier.verify(googleToken);
 
-        // 2. 사용자 조회 또는 신규 생성
         User user = userRepository.findByEmail(googleUserInfo.getEmail())
-                .orElseGet(() -> {
-                    User newUser = User.builder()
-                            .email(googleUserInfo.getEmail())
-                            .name(googleUserInfo.getName())
-                            .build();
-                    return userRepository.save(newUser);
-                });
+                .orElseGet(() -> userRepository.save(
+                        User.builder()
+                                .email(googleUserInfo.getEmail())
+                                .name(googleUserInfo.getName())
+                                .build()
+                ));
 
-        // 3. 토큰 생성 및 쿠키 설정
         return createTokensAndSetCookies(user, response);
     }
 
-    /**
-     * 토큰을 생성하고 쿠키를 설정합니다. (UserService 내부에 다시 구현)
-     */
-    private UserResponseDTO.LoginResponseDTO createTokensAndSetCookies(User user, HttpServletResponse response) {
 
-        // 1. Authentication 객체 생성
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    /* ============================================================
+       🔥 토큰 및 쿠키 생성
+    ============================================================ */
+    private UserResponseDTO.LoginResponseDTO createTokensAndSetCookies(
+            User user,
+            HttpServletResponse response
+    ) {
+
         UserUserDetails userDetails = new UserUserDetails(user);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
 
-        // 2. 기존 Refresh Token 삭제 (ID와 타입 사용)
+        List<GrantedAuthority> authorities =
+                List.of(new SimpleGrantedAuthority("STATUS_NORMAL"));
+
+        Authentication auth =
+                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+
         refreshTokenService.removeRefreshTokenByUser(user.getId(), "USER");
 
-        // 3. Access/Refresh Token 생성 (Authentication 객체 전달)
-        String accessToken = jwtTokenProvider.createAccessToken(authentication);
-        String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
+        String accessToken = jwtTokenProvider.createAccessToken(auth);
+        String refreshToken = jwtTokenProvider.createRefreshToken(auth);
 
-        // 4. Refresh Token을 Redis에 저장 (ID와 타입 사용)
         String tokenId = refreshTokenService.storeRefreshToken(
                 user.getId(),
                 "USER",
@@ -85,28 +89,21 @@ public class UserService {
                 jwtProperties.getRefreshToken().getExpiration()
         );
 
-
-        // 5. 쿠키 설정
-        setCookies(response, accessToken, tokenId);
-        String csrfToken = createCsrfToken(response);
+        cookieUtil.createAccessTokenCookie(response, accessToken);
+        cookieUtil.createRefreshTokenCookie(response, tokenId);
+        String csrfToken = cookieUtil.createCsrfTokenCookie(response);
 
         return UserResponseDTO.LoginResponseDTO.builder()
                 .csrfToken(csrfToken)
                 .build();
     }
 
-    // --- 아래는 AdminService와 중복되는 헬퍼 메소드들 ---
 
-    private void setCookies(HttpServletResponse response, String accessToken, String tokenId) {
-        cookieUtil.createAccessTokenCookie(response, accessToken);
-        cookieUtil.createRefreshTokenCookie(response, tokenId);
-    }
-
-    private String createCsrfToken(HttpServletResponse response) {
-        return cookieUtil.createCsrfTokenCookie(response);
-    }
-
+    /* ============================================================
+       🔥 로그아웃 – 쿠키/토큰 삭제
+    ============================================================ */
     public void logout(HttpServletRequest request, HttpServletResponse response) {
+
         cookieUtil.getRefreshTokenFromCookie(request)
                 .ifPresent(tokenId -> refreshTokenService.removeRefreshToken(tokenId));
 
@@ -115,37 +112,53 @@ public class UserService {
         cookieUtil.deleteCsrfTokenCookie(response);
     }
 
+
+    /* ============================================================
+       🔥 회원탈퇴(익명화) + 로그아웃
+    ============================================================ */
     @Transactional
     public void signout(HttpServletRequest request, HttpServletResponse response) {
-        // 현재 로그인된 사용자 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserUserDetails)) {
-            // 인증 정보가 없거나, 예상치 못한 Principal 타입인 경우 예외 처리
-            throw new UserHandler(UserErrorStatus.USER_NOT_FOUND); // 적절한 에러 상태 정의 필요
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!(auth.getPrincipal() instanceof UserUserDetails userDetails)) {
+            throw new UserHandler(UserErrorStatus.USER_NOT_FOUND);
         }
-        // 현재 로그인 된 사용자를 가져온 뒤 익명화
-        UserUserDetails currentUserDetails = (UserUserDetails) authentication.getPrincipal();
-        Long currentUserId = currentUserDetails.getUser().getId();
-        // 2. ID를 사용해 DB에서 User 객체를 '다시 조회'하여 managed 상태로 만듦
-        User currentUser = userRepository.findById(currentUserId)
+
+        Long userId = userDetails.getUser().getId();
+
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserHandler(UserErrorStatus.USER_NOT_FOUND));
-        currentUser.anonymize();
+
+        user.anonymize();
 
         logout(request, response);
     }
 
+
+    /* ============================================================
+       🔥 Presigned URL 생성
+    ============================================================ */
     public UserResponseDTO.generatePresignedUrlResponseDTO generateUrl(
-            UserRequestDTO.generatePresignedUrlRequestDTO request, HttpServletResponse response) {
+            UserRequestDTO.generatePresignedUrlRequestDTO request) {
+
         return s3Service.generatePresignedUrl(request);
     }
 
+
+    /* ============================================================
+       🔥 파일 다운로드 URL 생성
+    ============================================================ */
     public UserResponseDTO.downloadUrlResponseDTO generateDownloadUrl(
-            UserRequestDTO.downloadUrlRequestDTO request){
-        String presignedUrl = s3Service.generatePresignedUrlForDownload(request.getFileKey(), request.getOriginalFileName(), 3600);
+            UserRequestDTO.downloadUrlRequestDTO request) {
+
+        String presignedUrl = s3Service.generatePresignedUrlForDownload(
+                request.getFileKey(),
+                request.getOriginalFileName(),
+                3600
+        );
 
         return UserResponseDTO.downloadUrlResponseDTO.builder()
                 .presignedUrl(presignedUrl)
                 .build();
     }
-
 }

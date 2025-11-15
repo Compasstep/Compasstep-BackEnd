@@ -83,6 +83,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/posts/*/comments").permitAll()
                         .requestMatchers(HttpMethod.GET, "/csrf-token").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user/files/download").permitAll()
 
                         // 권한 필요한 영역
                         .requestMatchers("/api/admin/**").hasAnyRole("GENERAL", "ROOT")

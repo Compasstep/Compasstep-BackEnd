@@ -3,6 +3,7 @@ package com.fifo.compasstep.user.dto;
 import lombok.*;
 
 public class UserRequestDTO {
+
     @Getter
     @Builder
     @AllArgsConstructor
@@ -10,18 +11,22 @@ public class UserRequestDTO {
     public static class LoginRequestDTO {
         @NonNull
         private String googleToken;
-
     }
 
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class generatePresignedUrlRequestDTO {
         @NonNull
         private String fileType;
+
         @NonNull
         private String contentType;
+
         @NonNull
         private Long fileSize;
+
         @NonNull
         private String originalFileName;
     }
