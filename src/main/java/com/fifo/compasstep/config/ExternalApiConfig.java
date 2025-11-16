@@ -52,15 +52,25 @@ public class ExternalApiConfig {
     @Bean("fastApiClient")
     @Lazy
     public WebClient fastApiClient() {
-        var cfg = props.getFastapi(); // ← ExternalApiProperties에 fastapi 추가 (아래 2번)
+
+        var cfg = props.getFastapi();
+        int baseTimeout = cfg.getTimeoutMs(); // 기존 5000 (5초)
+
+        HttpClient httpClient = HttpClient.create()
+                .option(io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS, baseTimeout)
+                .responseTimeout(Duration.ofMillis(baseTimeout * 6))  // 🔥 최소 30초 확보
+                .doOnConnected(conn -> conn
+                        .addHandlerLast(new io.netty.handler.timeout.ReadTimeoutHandler(baseTimeout * 4, java.util.concurrent.TimeUnit.MILLISECONDS))
+                        .addHandlerLast(new io.netty.handler.timeout.WriteTimeoutHandler(baseTimeout, java.util.concurrent.TimeUnit.MILLISECONDS))
+                );
+
         return WebClient.builder()
                 .baseUrl(cfg.getBaseUrl())
-                .clientConnector(new ReactorClientHttpConnector(
-                        HttpClient.create().responseTimeout(Duration.ofMillis(cfg.getTimeoutMs()))
-                ))
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .defaultHeader("Content-Type", "application/json")
                 .build();
     }
+
 
     // Prometheus 클라이언트 추가
     @Bean("prometheusClient")
