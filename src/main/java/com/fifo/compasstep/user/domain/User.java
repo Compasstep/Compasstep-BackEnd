@@ -84,8 +84,14 @@ public class User extends BaseEntity {
         // 개인 식별 정보를 정해진 더미 값으로 변경
         this.name = "탈퇴된 사용자" + this.name;
         this.nickname = "탈퇴된 사용자" + this.nickname;
-        this.email = "탈퇴된 사용자" + this.email;
-        // 로그인 방지를 위해 비밀번호는 사용 불가능한 임의의 값으로 설정
+
+        // UUID를 사용하여 고유한 난수 문자열 생성 (로그인 방지 및 고유성 확보)
+        String uniqueId = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+        this.email = "delete" + uniqueId + "@gmail.com";
+
+        // 로그인 방지를 위해 비밀번호는 사용 불가능한 임의의 값으로 설정 (원래 로직에는 없지만 익명화 시 보안 강화 차원에서 필요)
+        // this.password = "impossible_to_login_" + uniqueId;
+
         this.status = Status.DELETED;
         this.isDeleted = true;
     }
