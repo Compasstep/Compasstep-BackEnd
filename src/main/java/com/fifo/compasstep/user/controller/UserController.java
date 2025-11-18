@@ -49,7 +49,6 @@ public class UserController {
         return ApiResponse.success(result);
     }
 
-    @PreAuthorize("hasAnyAuthority('STATUS_NORMAL','STATUS_SUSPENDED')")
     @PostMapping("/files/download")
     public ApiResponse<UserResponseDTO.downloadUrlResponseDTO> download(
             @RequestBody UserRequestDTO.downloadUrlRequestDTO request) {

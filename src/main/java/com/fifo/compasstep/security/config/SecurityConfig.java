@@ -64,7 +64,7 @@ public class SecurityConfig {
                         // 로그인/로그아웃/리프레시/소셜 콜백 등 공개
                         .requestMatchers(
                                 "/api/admin/login", "/api/admin/logout", "/auth/oauth/**", "/api/admin/refresh",
-                                "/api/user/auth/login", "/api/user/auth/logout"
+                                "/api/user/auth/login", "/api/user/auth/logout", "/api/user/files/download"
                         ).permitAll()
 
                         // Swagger 공개
@@ -83,7 +83,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/posts/*/comments").permitAll()
                         .requestMatchers(HttpMethod.GET, "/csrf-token").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user/files/download").permitAll()
 
                         // 권한 필요한 영역
                         .requestMatchers("/api/admin/**").hasAnyRole("GENERAL", "ROOT")

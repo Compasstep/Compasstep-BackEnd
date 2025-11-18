@@ -60,6 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 requestURI.startsWith("/api/admin/refresh") ||
                 requestURI.startsWith("/api/admin/logout") ||
                 requestURI.startsWith("/api/user/auth/login") ||
+                requestURI.startsWith("/api/user/files/download") ||
                 requestURI.startsWith("/api/user/auth/logout")) {
 
             filterChain.doFilter(request, response);

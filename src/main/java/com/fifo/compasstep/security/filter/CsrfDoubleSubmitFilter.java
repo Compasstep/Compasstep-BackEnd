@@ -31,6 +31,7 @@ public class CsrfDoubleSubmitFilter extends OncePerRequestFilter {
                 path.startsWith("/api/auth/refresh") ||
                 path.startsWith("/api/admin/logout") ||
                 path.startsWith("/api/admin/password/change") ||
+                        path.startsWith("/api/user/files/download") ||
                         //user쪽 api
                 path.startsWith("/api/user/auth/login") ||
                 path.startsWith("/api/user/auth/logout") ||

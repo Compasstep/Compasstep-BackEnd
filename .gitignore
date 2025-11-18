@@ -39,3 +39,6 @@ src/main/resources/application-secret.yml
 
 ### Log ###
 logs
+
+/postgres/
+docker-compose.yml
