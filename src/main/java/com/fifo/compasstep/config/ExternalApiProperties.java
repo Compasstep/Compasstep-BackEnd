@@ -31,7 +31,7 @@ public class ExternalApiProperties {
     @Setter
     public static class Fastapi {
         private String baseUrl;
-        private int timeoutMs = 5000;
+        private int timeoutMs = 500000;
     }
 
     // Prometheus 관련 설정 추가
