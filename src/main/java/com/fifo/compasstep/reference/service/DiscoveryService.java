@@ -86,7 +86,7 @@ public class DiscoveryService {
             }
             case "422" -> throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_UNPROCESSABLE);
             case "403" -> throw new ReferenceHandler(DiscoveryErrorStatus.USER_FORBIDDEN);
-            case "404" -> throw new ReferenceHandler(DiscoveryErrorStatus.USER_NOT_FOUND);
+            case "404" -> throw new ReferenceHandler(DiscoveryErrorStatus.YOUTUBE_VIDEO_NOT_FOUND);
             case "400" -> throw new ReferenceHandler(DiscoveryErrorStatus.INVALID_REQUEST);
             default -> throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_ERROR);
         }
@@ -126,7 +126,7 @@ public class DiscoveryService {
             }
             // 이전에 정의한 다른 에러 케이스들...
             case "422" -> throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_UNPROCESSABLE);
-            case "404" -> throw new ReferenceHandler(DiscoveryErrorStatus.USER_NOT_FOUND);
+            case "404" -> throw new ReferenceHandler(DiscoveryErrorStatus.POST_COMMENT_NOT_FOUND);
             // ... (기타 4xx 코드)
             default -> throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_ERROR);
         }
@@ -165,7 +165,7 @@ public class DiscoveryService {
             }
             // 이전에 정의한 다른 에러 케이스들...
             case "422" -> throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_UNPROCESSABLE);
-            case "404" -> throw new ReferenceHandler(DiscoveryErrorStatus.USER_NOT_FOUND);
+            case "404" -> throw new ReferenceHandler(DiscoveryErrorStatus.LYRICS_NOT_FOUND);
             // ... (기타 4xx 코드)
             default -> throw new ReferenceHandler(DiscoveryErrorStatus.FASTAPI_ERROR);
         }
