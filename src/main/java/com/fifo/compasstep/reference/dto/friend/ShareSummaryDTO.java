@@ -8,13 +8,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ShareSummaryDTO {
 
-    // JSON에서 1, 0, 0 (정수)로 왔으므로 int로 받습니다.
+    // JSON에서는 소수로 와서 수정해놓음.
     @JsonProperty("positive")
-    private int positive;
+    private double positive;
 
     @JsonProperty("negative")
-    private int negative;
+    private double negative;
 
     @JsonProperty("neutral")
-    private int neutral;
+    private double neutral;
 }
